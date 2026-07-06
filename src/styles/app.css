@@ -54,6 +54,24 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.button-label {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  padding: 0.3rem 0.8rem;
+  color: #111;
+  background: #c0c0c0;
+  border: 2px outset #fff;
+  box-shadow: 1px 1px 0 #000;
+  cursor: pointer;
+}
+
+.button-label:has(+ input:focus-visible),
+.button-label:focus-within {
+  outline: 3px dotted #000;
+  outline-offset: 3px;
+}
+
 :focus-visible {
   outline: 3px dotted #000;
   outline-offset: 3px;
@@ -220,6 +238,14 @@ button:disabled {
   line-height: 1.5;
 }
 
+.compact-hero {
+  padding-bottom: 0.35rem;
+}
+
+.compact-hero h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.78rem;
@@ -244,6 +270,169 @@ button:disabled {
 
 .privacy-icon {
   font-size: 1.7rem;
+}
+
+.import-privacy {
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.import-group {
+  margin-bottom: 1.35rem;
+}
+
+.drop-zone {
+  display: grid;
+  min-height: 8.5rem;
+  align-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  padding: 1rem;
+  background: #fff;
+  border: 3px dashed #777;
+  text-align: center;
+}
+
+.drop-zone-active {
+  color: #fff;
+  background: #000080;
+  border-color: #fff;
+}
+
+.drop-zone small {
+  color: #555;
+}
+
+.drop-zone-active small {
+  color: inherit;
+}
+
+.job-progress {
+  display: grid;
+  grid-template-columns: minmax(6rem, 1fr) minmax(10rem, 2fr) auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding-top: 0.8rem;
+}
+
+.job-progress progress {
+  width: 100%;
+}
+
+.audio-result {
+  padding-top: 0.8rem;
+}
+
+.file-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 0.75rem;
+  border: 2px inset #fff;
+}
+
+.file-facts div {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px dotted #777;
+}
+
+.file-facts dt {
+  font-weight: 700;
+}
+
+.file-facts dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audio-result audio {
+  width: 100%;
+}
+
+.waveform-figure {
+  margin: 0.75rem 0;
+}
+
+.waveform-figure canvas {
+  display: block;
+  width: 100%;
+  height: 7.5rem;
+  border: 2px inset #fff;
+}
+
+.waveform-figure figcaption {
+  margin-top: 0.3rem;
+  color: #444;
+  font-size: 0.8rem;
+}
+
+.risk-notice,
+.acknowledgement,
+.import-error {
+  padding: 0.65rem;
+  border: 2px inset #fff;
+}
+
+.risk-low {
+  background: #c8efc8;
+}
+.risk-moderate {
+  background: #ffe59a;
+}
+.risk-high {
+  color: #fff;
+  background: #800000;
+}
+
+.acknowledgement {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  background: #ffffdf;
+}
+
+.import-group > label:first-of-type {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.import-group textarea {
+  width: 100%;
+  padding: 0.55rem;
+  resize: vertical;
+  background: #fff;
+  border: 2px inset #fff;
+  line-height: 1.4;
+}
+
+.lyrics-actions {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding-top: 0.6rem;
+  color: #444;
+  font-size: 0.85rem;
+}
+
+.import-error {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+  color: #fff;
+  background: #800000;
+}
+
+.project-file-name {
+  overflow-wrap: anywhere;
+  font-weight: 700;
 }
 
 .group-box {
@@ -488,6 +677,16 @@ button:disabled {
   .control-note {
     display: block;
     margin: 0.7rem 0 0;
+  }
+
+  .file-facts,
+  .job-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .lyrics-actions {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .status-bar {

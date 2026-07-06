@@ -4,6 +4,7 @@ import { useAppStore } from "./state/store";
 import { CapabilitySummary } from "../components/common/CapabilitySummary";
 import { ModalDialog } from "../components/common/ModalDialog";
 import { StageNavigation } from "../components/common/StageNavigation";
+import { ImportWorkspace } from "../components/import/ImportWorkspace";
 import {
   probeRuntimeCapabilities,
   type RuntimeCapabilities,
@@ -25,6 +26,11 @@ export function App() {
   const closeDialog = useAppStore((state) => state.closeDialog);
   const [capabilities, setCapabilities] = useState<RuntimeCapabilities | null>(null);
   const [capabilityFailure, setCapabilityFailure] = useState(false);
+  const [audioSummary, setAudioSummary] = useState<{
+    name: string;
+    durationMs: number;
+    risk: "low" | "moderate" | "high";
+  } | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -51,7 +57,7 @@ export function App() {
           <div className="app-icon" aria-hidden="true">
             B
           </div>
-          <h1 id="app-title">BOLT95 — Local Lyric Studio</h1>
+          <h1 id="app-title">BOLT95 — Browser Only Lyric Transcription</h1>
           <div className="window-buttons" aria-hidden="true">
             <span>_</span>
             <span>□</span>
@@ -74,62 +80,7 @@ export function App() {
         <StageNavigation activeStage={activeStage} onSelect={setActiveStage} />
 
         <div className="workspace">
-          <section className="workspace-main" aria-labelledby="workspace-title">
-            <div className="hero-copy">
-              <p className="eyebrow">IMPORT</p>
-              <h2 id="workspace-title">Create timed lyrics locally</h2>
-              <p>
-                Add an MP3 and optional lyrics. BOLT95 will transcribe, align, edit, preview, and
-                export without sending your files anywhere.
-              </p>
-            </div>
-
-            <aside className="privacy-notice" aria-label="Privacy notice">
-              <span className="privacy-icon" aria-hidden="true">
-                🔒
-              </span>
-              <div>
-                <strong>Your media stays on this device.</strong>
-                <p>
-                  Audio, lyrics, transcripts, projects, and rendered videos are processed by your
-                  browser and are never uploaded.
-                </p>
-              </div>
-            </aside>
-
-            <section className="group-box workflow-preview" aria-labelledby="next-title">
-              <h2 id="next-title">What happens next</h2>
-              <ol className="workflow-list">
-                <li>
-                  <span aria-hidden="true">1</span>
-                  <div>
-                    <strong>Import</strong>
-                    <small>Choose audio and add canonical lyrics.</small>
-                  </div>
-                </li>
-                <li>
-                  <span aria-hidden="true">2</span>
-                  <div>
-                    <strong>Process locally</strong>
-                    <small>Whisper finds timing evidence in a worker.</small>
-                  </div>
-                </li>
-                <li>
-                  <span aria-hidden="true">3</span>
-                  <div>
-                    <strong>Review and export</strong>
-                    <small>Correct timing, style video, and download.</small>
-                  </div>
-                </li>
-              </ol>
-              <button type="button" disabled>
-                Choose audio…
-              </button>
-              <p className="control-note">
-                Audio import is enabled in the next implementation phase.
-              </p>
-            </section>
-          </section>
+          <ImportWorkspace onAudioChange={setAudioSummary} />
 
           <aside className="workspace-sidebar">
             <CapabilitySummary
@@ -146,14 +97,25 @@ export function App() {
               <div className="empty-project" aria-hidden="true">
                 ♫
               </div>
-              <p>No project loaded.</p>
-              <p>Your latest local autosave will appear here in a later stage.</p>
+              {audioSummary ? (
+                <>
+                  <p className="project-file-name">{audioSummary.name}</p>
+                  <p>
+                    {Math.round(audioSummary.durationMs / 1000)} seconds · {audioSummary.risk} risk
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>No project loaded.</p>
+                  <p>Select an MP3 to create an in-memory project input.</p>
+                </>
+              )}
             </section>
           </aside>
         </div>
 
         <footer className="status-bar">
-          <span>Ready — no project loaded</span>
+          <span>{audioSummary ? `Ready — ${audioSummary.name}` : "Ready — no project loaded"}</span>
           <span>{capabilities ? `${capabilities.mode} mode` : "checking device"}</span>
           <span>v{buildInfo.appVersion}</span>
         </footer>

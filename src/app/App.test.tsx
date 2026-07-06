@@ -52,7 +52,7 @@ describe("App shell", () => {
 
   it("shows local-processing privacy and guarded stages", async () => {
     render(<App />);
-    expect(screen.getByRole("heading", { name: "Create timed lyrics locally" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Add audio and lyrics" })).toBeVisible();
     expect(screen.getByText("Your media stays on this device.")).toBeVisible();
     expect(screen.getByRole("button", { name: /2\. Transcribe/u })).toBeDisabled();
     expect(await screen.findByText("Standard mode")).toBeVisible();

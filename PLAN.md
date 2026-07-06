@@ -16,7 +16,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 
 - [x] Phase 0 — Technical proof and architecture decisions
 - [x] Phase 1 — Static application foundation and GitHub Pages
-- [ ] Phase 2 — Audio and lyrics import
+- [x] Phase 2 — Audio and lyrics import
 - [ ] Phase 3 — Canonical lyrics and alignment engine
 - [ ] Phase 4 — Local Whisper transcription
 - [ ] Phase 5 — Workflow integration and alignment review
@@ -185,15 +185,15 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Implement picker and drag/drop with keyboard-equivalent controls.
-- [ ] Validate zero-byte, MIME/extension mismatch, corrupt, over-size, and over-duration inputs without trusting file names.
-- [ ] Decode MP3, downmix channels, resample to 16 kHz mono Float32 PCM, and transfer ownership to the worker/job owner.
-- [ ] Compute duration, SHA-256 audio fingerprint, and compact min/max/RMS waveform data.
-- [ ] Implement configurable low/moderate/high processing-risk estimates with acknowledgement for high risk.
-- [ ] Parse UTF-8 TXT and existing LRC while preserving blank lines, stanza boundaries, metadata, and section annotations.
-- [ ] Keep the original File/Object URL for playback while avoiding duplicate full-buffer copies.
-- [ ] Implement progress, cancellation, cleanup, and recovery after decode failure.
-- [ ] Create synthetic legal fixtures: short valid MP3, silence, stereo, corrupt bytes, zero-byte, Unicode lyrics, and LRC.
+- [x] Implement picker and drag/drop with keyboard-equivalent controls.
+- [x] Validate zero-byte, MIME/extension mismatch, corrupt, over-size, and over-duration inputs without trusting file names.
+- [x] Decode MP3, downmix channels, resample to 16 kHz mono Float32 PCM, and transfer ownership to the worker/job owner.
+- [x] Compute duration, SHA-256 audio fingerprint, and compact min/max/RMS waveform data.
+- [x] Implement configurable low/moderate/high processing-risk estimates with acknowledgement for high risk.
+- [x] Parse UTF-8 TXT and existing LRC while preserving blank lines, stanza boundaries, metadata, and section annotations.
+- [x] Keep the original File/Object URL for playback while avoiding duplicate full-buffer copies.
+- [x] Implement progress, cancellation, cleanup, and recovery after decode failure.
+- [x] Create synthetic legal fixtures: short valid MP3, silence, stereo, corrupt bytes, zero-byte, Unicode lyrics, and LRC.
 
 **Tests added:** Deterministic resampler and waveform unit tests; file/parser validation tests; worker cancellation/transfer integration tests; Playwright picker/drop/error/retry flows.
 
@@ -201,10 +201,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] A valid fixture yields correct metadata, finite 16 kHz mono samples, fingerprint, and waveform.
-- [ ] Resampling frequency/duration error stays within the documented fixture tolerance.
-- [ ] Invalid and corrupt files leave the import screen usable with a recovery action.
-- [ ] Cancelling releases the job and a second import succeeds without reload.
+- [x] A valid fixture yields correct metadata, finite 16 kHz mono samples, fingerprint, and waveform.
+- [x] Resampling frequency/duration error stays within the documented fixture tolerance.
+- [x] Invalid and corrupt files leave the import screen usable with a recovery action.
+- [x] Cancelling releases the job and a second import succeeds without reload.
 
 **Demo procedure:** Import valid audio by picker and drop, import Unicode TXT/LRC, inspect metadata/waveform, then exercise corrupt, oversize-warning, cancellation, and retry paths with `playwright-cli`.
 

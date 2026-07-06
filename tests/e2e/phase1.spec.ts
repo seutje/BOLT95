@@ -12,7 +12,7 @@ test("production shell is private, keyboard operable, and accessible", async ({ 
     if (message.type() === "error") consoleErrors.push(message.text());
   });
 
-  await expect(page.getByRole("heading", { name: "BOLT95 — Local Lyric Studio" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Add audio and lyrics" })).toBeVisible();
   await expect(page.getByText("Your media stays on this device.")).toBeVisible();
   await expect(page.getByRole("button", { name: /2\. Transcribe/u })).toBeDisabled();
 
