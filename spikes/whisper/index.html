@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BOLT95 — Whisper proof</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="../shared.css" />
+  </head>
+  <body>
+    <main class="window" aria-labelledby="title">
+      <header class="title-bar"><h1 id="title">Single-thread Whisper proof</h1></header>
+      <section class="content">
+        <p>
+          Loads a verified Tiny Q5_1 model and transcribes a public-domain 16 kHz mono fixture locally.
+          Nothing is uploaded.
+        </p>
+        <dl class="facts">
+          <dt>Cross-origin isolated</dt><dd id="isolated">Checking…</dd>
+          <dt>SharedArrayBuffer</dt><dd id="shared-array-buffer">Checking…</dd>
+          <dt>Fixture</dt><dd>JFK public-domain speech, 16 kHz mono PCM</dd>
+          <dt>Model</dt><dd>Tiny multilingual Q5_1 (32,152,673 bytes)</dd>
+        </dl>
+        <p class="controls">
+          <button id="run" type="button">Run 3-cycle proof</button>
+          <button id="cancel" type="button" disabled>Cancel</button>
+        </p>
+        <p id="status" class="status" role="status" aria-live="polite">Ready.</p>
+        <pre id="result" aria-label="Transcription result">No result yet.</pre>
+        <p><a href="../../">Back to Phase 0 proofs</a></p>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

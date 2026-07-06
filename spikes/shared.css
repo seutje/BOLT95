@@ -1,0 +1,59 @@
+:root {
+  color: #000;
+  background: #008080;
+  font-family: "MS Sans Serif", Tahoma, sans-serif;
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 2rem;
+}
+
+.window {
+  width: min(56rem, 100%);
+  margin: auto;
+  padding: 3px;
+  background: #c0c0c0;
+  border: 2px outset #fff;
+  box-shadow: 2px 2px #000;
+}
+
+.title-bar {
+  padding: 0.35rem 0.5rem;
+  color: #fff;
+  background: #000080;
+}
+
+.title-bar h1 { margin: 0; font-size: 1rem; }
+.content { padding: 1rem; }
+
+button, select, input {
+  min-height: 2.25rem;
+  font: inherit;
+}
+
+button {
+  padding: 0.25rem 0.8rem;
+  border: 2px outset #fff;
+  background: #c0c0c0;
+}
+
+button:active { border-style: inset; }
+button:focus-visible, a:focus-visible { outline: 3px dotted #000; outline-offset: 3px; }
+button:disabled { color: #666; }
+
+.controls { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.status { min-height: 3rem; padding: 0.5rem; border: 2px inset #fff; background: #fff; }
+.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+.facts dt { font-weight: 700; }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+pre { overflow: auto; padding: 0.75rem; background: #111; color: #0f0; }
+
+@media (max-width: 40rem) {
+  body { padding: 0.5rem; }
+  .facts { grid-template-columns: 1fr; }
+}

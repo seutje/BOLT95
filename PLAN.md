@@ -14,7 +14,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 
 ## Overall progress
 
-- [ ] Phase 0 — Technical proof and architecture decisions
+- [x] Phase 0 — Technical proof and architecture decisions
 - [ ] Phase 1 — Static application foundation and GitHub Pages
 - [ ] Phase 2 — Audio and lyrics import
 - [ ] Phase 3 — Canonical lyrics and alignment engine
@@ -98,17 +98,17 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Resolve `whisper.cpp` v1.8.6 to a full commit SHA and pin the build toolchain by immutable digest.
-- [ ] Build separate single-thread JS/WASM artifacts from a minimal C API; prove the produced code contains no pthread or `SharedArrayBuffer` requirement.
-- [ ] Load `ggml-tiny-q5_1.bin`, transcribe a short synthetic 16 kHz mono fixture, and return segment plus token timing from a Web Worker.
-- [ ] Verify the same proof with `crossOriginIsolated === false` and `typeof SharedArrayBuffer === "undefined"` in the page harness.
-- [ ] Measure WASM/model/PCM peak-memory approximations and context disposal over three repeated runs.
-- [ ] Create the checked-in model manifest with source URL, byte size, upstream revision, SHA-256, model type, and language mode.
-- [ ] Encode a deterministic five-second 540p canvas animation with audio through WebCodecs + Mediabunny, then play the resulting Blob.
-- [ ] Probe VP9/Opus, VP8/Opus, AVC/AAC, and MediaRecorder MIME support; save facts, not browser-name assumptions.
-- [ ] Measure output duration and audio/video drift, and prove cancellation closes frames and encoders.
-- [ ] Document whether FFmpeg or hierarchical alignment is triggered by evidence; default is “not triggered.”
-- [ ] Record license findings and redistribution requirements for Whisper, models, Mediabunny, and test media.
+- [x] Resolve `whisper.cpp` v1.8.6 to a full commit SHA and pin the build toolchain by immutable digest.
+- [x] Build separate single-thread JS/WASM artifacts from a minimal C API; prove the produced code contains no pthread or `SharedArrayBuffer` requirement.
+- [x] Load `ggml-tiny-q5_1.bin`, transcribe a short public-domain 16 kHz mono fixture, and return segment plus token timing from a Web Worker.
+- [x] Verify the same proof with `crossOriginIsolated === false` and `typeof SharedArrayBuffer === "undefined"` in the page harness.
+- [x] Measure WASM/model/PCM peak-memory approximations and context disposal over three repeated runs.
+- [x] Create the checked-in model manifest with source URL, byte size, upstream revision, SHA-256, model type, and language mode.
+- [x] Encode a deterministic five-second 540p canvas animation with audio through WebCodecs + Mediabunny, then play the resulting Blob.
+- [x] Probe VP9/Opus, VP8/Opus, AVC/AAC, and MediaRecorder MIME support; save facts, not browser-name assumptions.
+- [x] Measure output duration and audio/video drift, and prove cancellation closes frames and encoders.
+- [x] Document whether FFmpeg or hierarchical alignment is triggered by evidence; default is “not triggered.”
+- [x] Record license findings and redistribution requirements for Whisper, models, Mediabunny, and test media.
 
 **Tests added:** Vitest checks for manifest validation and capability normalization; Playwright smoke specs for both proof pages; a script that inspects generated WASM glue for forbidden thread assumptions.
 
@@ -116,11 +116,11 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] A real model transcribes the fixture in Chromium from a plain static server with no isolation headers.
-- [ ] The result includes monotonic timing evidence adequate for later word assembly.
-- [ ] A playable five-second WebM is produced with duration drift no greater than 100 ms.
-- [ ] A cancelled proof leaves no running worker/encoder and can be started again without reload.
-- [ ] ADRs contain immutable upstream revisions, asset hashes, licenses, benchmark observations, and fallback decisions.
+- [x] A real model transcribes the fixture in Chromium from a plain static server with no isolation headers.
+- [x] The result includes monotonic timing evidence adequate for later word assembly.
+- [x] A playable five-second WebM is produced with duration drift no greater than 100 ms.
+- [x] A cancelled proof leaves no running worker/encoder and can be started again without reload.
+- [x] ADRs contain immutable upstream revisions, asset hashes, licenses, benchmark observations, and fallback decisions.
 
 **Demo procedure:** Run the static spike server, open each proof with `playwright-cli`, assert `crossOriginIsolated` is false, transcribe the fixture, export the clip, play it to completion, inspect the network log, and cancel/restart each job once.
 

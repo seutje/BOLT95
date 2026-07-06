@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "sourceRevision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+  "models": [
+    {
+      "id": "tiny-multilingual-q5_1",
+      "displayName": "Tiny multilingual (Q5_1)",
+      "fileName": "ggml-tiny-q5_1.bin",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-tiny-q5_1.bin",
+      "sizeBytes": 32152673,
+      "sha256": "818710568da3ca15689e31a743197b520007872ff9576237bda97bd1b469c3d7",
+      "modelType": "ggml-q5_1",
+      "languageMode": "multilingual",
+      "recommendedDeviceClass": "low",
+      "bundled": true
+    },
+    {
+      "id": "base-multilingual-q5_1",
+      "displayName": "Base multilingual (Q5_1)",
+      "fileName": "ggml-base-q5_1.bin",
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base-q5_1.bin",
+      "sizeBytes": 59707625,
+      "sha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+      "modelType": "ggml-q5_1",
+      "languageMode": "multilingual",
+      "recommendedDeviceClass": "medium",
+      "bundled": true
+    }
+  ]
+}
