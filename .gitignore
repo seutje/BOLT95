@@ -1,0 +1,46 @@
+# Dependencies and package-manager state
+node_modules/
+.npm/
+
+# Production and local builds
+dist/
+build/
+.vite/
+*.tsbuildinfo
+
+# Test, coverage, and browser automation output
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Generated/downloaded third-party runtime assets
+.cache/
+.wasm-build/
+public/models/
+public/wasm/generated/
+
+# Locally generated media and project artifacts
+artifacts/
+exports/
+tmp/
+*.bolt95.json
+
+# Logs and local environment overrides
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.env
+.env.*
+!.env.example
+
+# Editor and operating-system metadata
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
