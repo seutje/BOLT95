@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AppError } from "../../app/errors/AppError";
 import { useAppStore } from "../../app/state/store";
+import { AlignmentFixtureViewer } from "../alignment/AlignmentFixtureViewer";
 import { parseLyrics, readLyricsFile, type ParsedLyrics } from "../../domain/lyrics/parser";
 import { importAudio, releaseAudioImport } from "../../media/audio/importAudio";
 import { formatDuration } from "../../media/audio/format";
@@ -271,6 +272,8 @@ export function ImportWorkspace({ onAudioChange }: ImportWorkspaceProps) {
       <button type="button" disabled={!audio || (audio.risk === "high" && !highRiskAccepted)}>
         Continue to transcription
       </button>
+
+      <AlignmentFixtureViewer />
     </section>
   );
 }

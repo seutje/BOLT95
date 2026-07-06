@@ -1,4 +1,11 @@
 import { z } from "zod";
+import {
+  alignedLineSchema,
+  alignedWordSchema,
+  manualLineTimingSchema,
+  transcriptResultSchema,
+} from "../alignment/engine";
+import { canonicalLyricsSchema } from "../lyrics/canonical";
 
 export const audioProjectInputSchema = z.object({
   durationMs: z.number().int().positive(),
@@ -35,4 +42,14 @@ export const projectInputSchema = z.object({
   lyrics: lyricsProjectInputSchema.optional(),
 });
 
+export const alignmentProjectSchema = z.object({
+  schemaVersion: z.literal(1),
+  canonical: canonicalLyricsSchema,
+  transcript: transcriptResultSchema,
+  words: z.array(alignedWordSchema),
+  lines: z.array(alignedLineSchema),
+  manualLineTimings: z.array(manualLineTimingSchema),
+});
+
 export type ProjectInput = z.infer<typeof projectInputSchema>;
+export type AlignmentProject = z.infer<typeof alignmentProjectSchema>;

@@ -492,6 +492,66 @@ button:disabled {
   font-size: 0.82rem;
 }
 
+.alignment-fixture {
+  margin-top: 1.2rem;
+}
+
+.fixture-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(10rem, 1fr) auto;
+  gap: 0.6rem;
+  align-items: center;
+  margin-bottom: 0.7rem;
+}
+
+.fixture-toolbar label {
+  font-weight: 700;
+}
+
+.fixture-toolbar select {
+  min-width: 0;
+  padding: 0.3rem;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
+.alignment-issues {
+  padding: 0.6rem 0.8rem 0.6rem 1.6rem;
+  margin: 0 0 0.75rem;
+  color: #fff;
+  background: #800000;
+  border: 2px inset #fff;
+}
+
+.alignment-table-wrap {
+  overflow-x: auto;
+  border: 2px inset #fff;
+}
+
+.alignment-table {
+  width: 100%;
+  min-width: 42rem;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.alignment-table th,
+.alignment-table td {
+  padding: 0.35rem 0.45rem;
+  border: 1px solid #808080;
+  text-align: left;
+  vertical-align: top;
+}
+
+.alignment-table th {
+  color: #fff;
+  background: #000080;
+}
+
+.alignment-ambiguous td {
+  background: #fff2a8;
+}
+
 .workspace-sidebar {
   display: flex;
   flex-direction: column;

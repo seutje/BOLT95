@@ -17,7 +17,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 0 — Technical proof and architecture decisions
 - [x] Phase 1 — Static application foundation and GitHub Pages
 - [x] Phase 2 — Audio and lyrics import
-- [ ] Phase 3 — Canonical lyrics and alignment engine
+- [x] Phase 3 — Canonical lyrics and alignment engine
 - [ ] Phase 4 — Local Whisper transcription
 - [ ] Phase 5 — Workflow integration and alignment review
 - [ ] Phase 6 — Timeline editor and project persistence
@@ -226,16 +226,16 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Define versioned canonical token, transcript, aligned word/line, timing provenance, and review schemas.
-- [ ] Parse annotations separately and retain source offsets, exact display text, whitespace, and stanza structure.
-- [ ] Implement deterministic Unicode/case/space/punctuation/apostrophe/dash/diacritic/number/contraction normalization with language hooks.
-- [ ] Classify vocalizations and annotations without deleting their canonical representation.
-- [ ] Implement configurable candidate scoring and deterministic global dynamic-programming alignment with ordered backtracking.
-- [ ] Add monotonic anchor repair, weighted gap interpolation/extrapolation, minimum durations, track bounds, and non-overlapping line derivation.
-- [ ] Detect repeated blocks, suspicious jumps, large unmatched spans, and ambiguous regions.
-- [ ] Calculate line confidence/review state and preserve manual timing over future automatic runs.
-- [ ] Add fixtures for exact, substitutions, missing/extra words, fillers, repeated chorus, instrumental gaps, contractions, numbers, accents, non-English, silence, and wrong-song lyrics.
-- [ ] Benchmark alignment time/memory and run the hierarchical-alignment trigger criteria.
+- [x] Define versioned canonical token, transcript, aligned word/line, timing provenance, and review schemas.
+- [x] Parse annotations separately and retain source offsets, exact display text, whitespace, and stanza structure.
+- [x] Implement deterministic Unicode/case/space/punctuation/apostrophe/dash/diacritic/number/contraction normalization with language hooks.
+- [x] Classify vocalizations and annotations without deleting their canonical representation.
+- [x] Implement configurable candidate scoring and deterministic global dynamic-programming alignment with ordered backtracking.
+- [x] Add monotonic anchor repair, weighted gap interpolation/extrapolation, minimum durations, track bounds, and non-overlapping line derivation.
+- [x] Detect repeated blocks, suspicious jumps, large unmatched spans, and ambiguous regions.
+- [x] Calculate line confidence/review state and preserve manual timing over future automatic runs.
+- [x] Add fixtures for exact, substitutions, missing/extra words, fillers, repeated chorus, instrumental gaps, contractions, numbers, accents, non-English, silence, and wrong-song lyrics.
+- [x] Benchmark alignment time/memory and run the hierarchical-alignment trigger criteria.
 
 **Tests added:** Table/property tests for all normalization and timing invariants; golden alignment fixtures with expected ranges/provenance; repeated-section regression tests; long-input benchmark.
 
@@ -243,11 +243,11 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] Canonical input reconstructs exactly after normalization/alignment.
-- [ ] All persisted times are integer, monotonic, non-negative, and within duration.
-- [ ] Repeated chorus fixtures align in order or are explicitly marked ambiguous; they never jump backward.
-- [ ] Manual values survive re-alignment unless the test explicitly requests replacement.
-- [ ] The benchmark either stays within the recorded budget or produces an ADR and checked task for hierarchical alignment.
+- [x] Canonical input reconstructs exactly after normalization/alignment.
+- [x] All persisted times are integer, monotonic, non-negative, and within duration.
+- [x] Repeated chorus fixtures align in order or are explicitly marked ambiguous; they never jump backward.
+- [x] Manual values survive re-alignment unless the test explicitly requests replacement.
+- [x] The benchmark either stays within the recorded budget or produces an ADR and checked task for hierarchical alignment.
 
 **Demo procedure:** Run the fixture viewer, switch among exact/repeated/wrong-song cases, inspect source/confidence, and show the automated evaluation report.
 
