@@ -11,14 +11,25 @@
     <main class="window" aria-labelledby="title">
       <header class="title-bar"><h1 id="title">Streaming video export proof</h1></header>
       <section class="content">
-        <p>Encodes a deterministic five-second 960 × 540 lyric animation with a generated audio tone.</p>
-        <dl id="capabilities" class="facts"><dt>Codec probes</dt><dd>Running…</dd></dl>
+        <p>
+          Encodes a deterministic five-second 960 × 540 lyric animation with a generated audio tone.
+        </p>
+        <dl id="capabilities" class="facts">
+          <dt>Codec probes</dt>
+          <dd>Running…</dd>
+        </dl>
         <p class="controls">
           <button id="export" type="button" disabled>Export five-second WebM</button>
           <button id="cancel" type="button" disabled>Cancel</button>
         </p>
         <p id="status" class="status" role="status" aria-live="polite">Probing this browser…</p>
-        <canvas id="canvas" width="960" height="540" style="width: 100%; height: auto" aria-label="Generated lyric animation frame"></canvas>
+        <canvas
+          id="canvas"
+          width="960"
+          height="540"
+          style="width: 100%; height: auto"
+          aria-label="Generated lyric animation frame"
+        ></canvas>
         <video id="video" controls style="width: 100%; margin-top: 1rem"></video>
         <pre id="result" aria-label="Export measurements">No result yet.</pre>
         <p><a href="../../">Back to Phase 0 proofs</a></p>

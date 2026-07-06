@@ -120,8 +120,8 @@ async function probe(): Promise<void> {
       id: "MediaRecorder WebM",
       supported:
         typeof MediaRecorder !== "undefined" &&
-        ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].some(
-          (type) => MediaRecorder.isTypeSupported(type),
+        ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].some((type) =>
+          MediaRecorder.isTypeSupported(type),
         ),
     }),
   ]);
@@ -166,9 +166,13 @@ async function waitForMetadata(element: HTMLVideoElement): Promise<number> {
   if (element.readyState >= HTMLMediaElement.HAVE_METADATA) return element.duration;
   await new Promise<void>((resolve, reject) => {
     element.addEventListener("loadedmetadata", () => resolve(), { once: true });
-    element.addEventListener("error", () => reject(new Error("Browser could not decode the result")), {
-      once: true,
-    });
+    element.addEventListener(
+      "error",
+      () => reject(new Error("Browser could not decode the result")),
+      {
+        once: true,
+      },
+    );
   });
   return element.duration;
 }
@@ -240,7 +244,8 @@ exportButton.addEventListener("click", () => {
         null,
         2,
       );
-      status.textContent = "Proof passed. The generated WebM is playable and within sync tolerance.";
+      status.textContent =
+        "Proof passed. The generated WebM is playable and within sync tolerance.";
       document.body.dataset.proof = "passed";
     } catch (error) {
       const wasCancelled = error instanceof DOMException && error.name === "AbortError";

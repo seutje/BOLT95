@@ -57,6 +57,8 @@ test("real Whisper model returns timed evidence", async ({ page }) => {
   };
   expect(result.transcript.segments.length).toBeGreaterThan(0);
   expect(
-    result.transcript.segments.flatMap((segment) => segment.tokens).some((token) => token.startMs !== null),
+    result.transcript.segments
+      .flatMap((segment) => segment.tokens)
+      .some((token) => token.startMs !== null),
   ).toBe(true);
 });

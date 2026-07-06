@@ -16,9 +16,7 @@ export interface ProofCapabilities {
 
 export type CapabilityMode = "standard" | "compatibility" | "unsupported";
 
-export function normalizeCapabilityMode(
-  capabilities: ProofCapabilities,
-): CapabilityMode {
+export function normalizeCapabilityMode(capabilities: ProofCapabilities): CapabilityMode {
   if (!capabilities.webCodecs && !capabilities.mediaRecorder) {
     return "unsupported";
   }

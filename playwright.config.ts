@@ -16,7 +16,7 @@ export default defineConfig({
   webServer: {
     command: subpath
       ? "npm run build:subpath && npm run preview:subpath"
-      : "npm run dev",
+      : "npm run build && npm run preview",
     url: new URL(basePath, "http://127.0.0.1:8000").href,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

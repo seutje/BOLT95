@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+.cache
+.wasm-build
+public/models
+public/wasm/generated
+public/fixtures/generated
+test-results
+playwright-report
+package-lock.json
+AGENTS.md
+DESIGN.md
+PLAN.md

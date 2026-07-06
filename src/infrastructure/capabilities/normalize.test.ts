@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  normalizeCapabilityMode,
-  type ProofCapabilities,
-} from "./normalize";
+import { normalizeCapabilityMode, type ProofCapabilities } from "./normalize";
 
 const baseline: ProofCapabilities = {
   crossOriginIsolated: false,
@@ -20,9 +17,7 @@ describe("normalizeCapabilityMode", () => {
   });
 
   it("uses compatibility mode when WebCodecs audio is unavailable", () => {
-    expect(
-      normalizeCapabilityMode({ ...baseline, audioEncoder: false }),
-    ).toBe("compatibility");
+    expect(normalizeCapabilityMode({ ...baseline, audioEncoder: false })).toBe("compatibility");
   });
 
   it("is unsupported without either encoding API", () => {

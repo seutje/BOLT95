@@ -88,11 +88,7 @@ async function initialize(request: Extract<WhisperRequest, { type: "INIT" }>): P
     print: () => undefined,
     printErr: () => undefined,
   });
-  const model = await download(
-    request.requestId,
-    request.modelUrl,
-    request.expectedModelBytes,
-  );
+  const model = await download(request.requestId, request.modelUrl, request.expectedModelBytes);
   const modelPointer = module._malloc(model.byteLength);
 
   try {
@@ -125,11 +121,7 @@ function run(request: Extract<WhisperRequest, { type: "RUN" }>): void {
 
   try {
     module.HEAPF32.set(pcm, pcmPointer / Float32Array.BYTES_PER_ELEMENT);
-    const status = module._bolt95_run(
-      pcmPointer,
-      pcm.length,
-      languagePointer,
-    );
+    const status = module._bolt95_run(pcmPointer, pcm.length, languagePointer);
     if (status !== 0) throw new Error(`whisper.cpp inference failed with code ${status}`);
 
     const segments: TranscriptSegment[] = [];

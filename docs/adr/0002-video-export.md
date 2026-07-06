@@ -24,13 +24,13 @@ after video and audio configuration support plus mux/decode verification all pas
 
 Pinned Chromium 149 reported:
 
-| Capability | Result |
-|---|---|
-| VP9 video + Opus audio | Supported |
-| VP8 video + Opus audio | Supported |
-| AVC video | Supported |
-| AAC audio | Unsupported |
-| MediaRecorder WebM | Supported |
+| Capability             | Result      |
+| ---------------------- | ----------- |
+| VP9 video + Opus audio | Supported   |
+| VP8 video + Opus audio | Supported   |
+| AVC video              | Supported   |
+| AAC audio              | Unsupported |
+| MediaRecorder WebM     | Supported   |
 
 The deterministic proof encoded 150 frames at 960 × 540 and 30 fps with a generated
 48 kHz mono tone. One measured VP9/Opus result was 870,948 bytes, reported 5.02 seconds

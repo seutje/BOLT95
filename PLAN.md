@@ -15,7 +15,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 ## Overall progress
 
 - [x] Phase 0 — Technical proof and architecture decisions
-- [ ] Phase 1 — Static application foundation and GitHub Pages
+- [x] Phase 1 — Static application foundation and GitHub Pages
 - [ ] Phase 2 — Audio and lyrics import
 - [ ] Phase 3 — Canonical lyrics and alignment engine
 - [ ] Phase 4 — Local Whisper transcription
@@ -142,17 +142,17 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Scaffold strict TypeScript/Vite React without a runtime router.
-- [ ] Add scripts for format check, lint, typecheck, unit, E2E, build, and preview-under-subpath.
-- [ ] Implement the semantic Windows 95 shell, stage navigation, status bar, dialogs, focus styles, reduced motion, and responsive stacking.
-- [ ] Implement `RuntimeCapabilities` probes, including codec probes, and map them to standard/compatibility/unsupported modes.
-- [ ] Implement typed `AppError`, privacy-safe diagnostics, and background job state.
-- [ ] Centralize asset construction using `import.meta.env.BASE_URL` and test workers, dynamic imports, icons, WASM, and models under `/BOLT95/`.
-- [ ] Inject app version, commit hash, schema version, renderer version, and engine versions at build time.
-- [ ] Add a restrictive CSP meta tag that still permits the verified worker/WASM/blob paths.
-- [ ] Add CI checks and official GitHub Pages artifact deployment with least-privilege permissions and concurrency.
-- [ ] Verify action major versions, then pin actions by full commit SHA with a version comment.
-- [ ] Add Dependabot for npm and GitHub Actions.
+- [x] Scaffold strict TypeScript/Vite React without a runtime router.
+- [x] Add scripts for format check, lint, typecheck, unit, E2E, build, and preview-under-subpath.
+- [x] Implement the semantic Windows 95 shell, stage navigation, status bar, dialogs, focus styles, reduced motion, and responsive stacking.
+- [x] Implement `RuntimeCapabilities` probes, including codec probes, and map them to standard/compatibility/unsupported modes.
+- [x] Implement typed `AppError`, privacy-safe diagnostics, and background job state.
+- [x] Centralize asset construction using `import.meta.env.BASE_URL` and test workers, dynamic imports, icons, WASM, and models under `/BOLT95/`.
+- [x] Inject app version, commit hash, schema version, renderer version, and engine versions at build time.
+- [x] Add a restrictive CSP meta tag that still permits the verified worker/WASM/blob paths.
+- [x] Add CI checks and official GitHub Pages artifact deployment with least-privilege permissions and concurrency.
+- [x] Verify action major versions, then pin actions by full commit SHA with a version comment.
+- [x] Add Dependabot for npm and GitHub Actions.
 
 **Tests added:** Unit tests for capability mapping, asset URLs, error serialization, and build metadata; component accessibility tests; Playwright root/subpath shell tests and baseline screenshots at desktop and narrow widths.
 
@@ -160,10 +160,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] Format, lint, typecheck, unit tests, E2E tests, and production build pass from a clean checkout.
-- [ ] The built app loads with no console errors at `/` and `/BOLT95/`.
-- [ ] Keyboard traversal, focus visibility, capability messaging, and privacy notice pass axe and manual checks.
-- [ ] The Pages workflow uploads only static files and needs no secret or server runtime.
+- [x] Format, lint, typecheck, unit tests, E2E tests, and production build pass from a clean checkout.
+- [x] The built app loads with no console errors at `/` and `/BOLT95/`.
+- [x] Keyboard traversal, focus visibility, capability messaging, and privacy notice pass axe and manual checks.
+- [x] The Pages workflow uploads only static files and needs no secret or server runtime.
 
 **Demo procedure:** Serve `dist` at `/BOLT95/`, use `playwright-cli` to resize to desktop/mobile, navigate every shell control by keyboard, inspect capabilities/diagnostics, and confirm all network URLs retain the base path.
 

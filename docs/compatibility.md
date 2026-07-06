@@ -2,16 +2,16 @@
 
 Last verified: 2026-07-06
 
-| Area | Required baseline | Phase 0 result |
-|---|---|---|
-| Hosting | Static files under `/` and `/BOLT95/` | Passed |
-| Isolation | `crossOriginIsolated === false` | Passed |
-| Shared memory | No `SharedArrayBuffer` | Passed |
-| Whisper | Single-thread WASM SIMD, Tiny Q5_1 | Passed |
-| Timing | Monotonic segment and token evidence | Passed |
-| Video | Five-second 540p WebM with audio | VP9/Opus passed |
-| Drift | At most 100 ms | 20 ms measured |
-| Cancellation | Cancel and restart without reload | Whisper and video passed |
+| Area          | Required baseline                     | Phase 0 result           |
+| ------------- | ------------------------------------- | ------------------------ |
+| Hosting       | Static files under `/` and `/BOLT95/` | Passed                   |
+| Isolation     | `crossOriginIsolated === false`       | Passed                   |
+| Shared memory | No `SharedArrayBuffer`                | Passed                   |
+| Whisper       | Single-thread WASM SIMD, Tiny Q5_1    | Passed                   |
+| Timing        | Monotonic segment and token evidence  | Passed                   |
+| Video         | Five-second 540p WebM with audio      | VP9/Opus passed          |
+| Drift         | At most 100 ms                        | 20 ms measured           |
+| Cancellation  | Cancel and restart without reload     | Whisper and video passed |
 
 The release target is current desktop Chromium. Firefox and Safari are best-effort
 and must be selected by capability probes, not browser-name checks. Subtitle and

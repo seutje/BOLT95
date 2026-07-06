@@ -1,9 +1,5 @@
 import manifest from "../../config/models.json";
-import type {
-  TranscriptProofResult,
-  WhisperRequest,
-  WhisperResponse,
-} from "./protocol";
+import type { TranscriptProofResult, WhisperRequest, WhisperResponse } from "./protocol";
 
 function requiredElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -21,8 +17,11 @@ const resultElement = requiredElement<HTMLElement>("#result");
 isolated.textContent = String(window.crossOriginIsolated);
 sharedArrayBuffer.textContent = String(typeof globalThis.SharedArrayBuffer !== "undefined");
 
-const tinyModel = manifest.models.find((model) => model.id === "tiny-multilingual-q5_1") ??
-  (() => { throw new Error("Tiny model is missing from the manifest"); })();
+const tinyModel =
+  manifest.models.find((model) => model.id === "tiny-multilingual-q5_1") ??
+  (() => {
+    throw new Error("Tiny model is missing from the manifest");
+  })();
 
 const baseUrl = new URL(import.meta.env.BASE_URL, window.location.origin);
 let activeWorker: Worker | undefined;
@@ -167,11 +166,7 @@ async function runCycle(pcm: Float32Array, cycle: number): Promise<TranscriptPro
   );
   validateTiming(response.result);
 
-  await runWorkerRequest(
-    worker,
-    { type: "DISPOSE", requestId: `${prefix}-dispose` },
-    "DISPOSED",
-  );
+  await runWorkerRequest(worker, { type: "DISPOSE", requestId: `${prefix}-dispose` }, "DISPOSED");
   worker.terminate();
   activeWorker = undefined;
   return response.result;

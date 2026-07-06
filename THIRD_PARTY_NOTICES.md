@@ -2,6 +2,10 @@
 
 ## Runtime components
 
+- **React and React DOM 19.2.7** — Copyright (c) Meta Platforms, Inc. and
+  affiliates; MIT License. Source: <https://github.com/facebook/react>
+- **Zustand 5.0.14** — Copyright (c) Paul Henschel and contributors; MIT License.
+  Source: <https://github.com/pmndrs/zustand>
 - **whisper.cpp v1.8.6** — Copyright (c) 2023-2026 The ggml authors; MIT License.
   Source revision: `23ee03506a91ac3d3f0071b40e66a430eebdfa1d`.
   Source: <https://github.com/ggml-org/whisper.cpp>
