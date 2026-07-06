@@ -1,1 +1,2 @@
 During development: check every phase before checking it off, committing and moving to the next. Don't make any crazy workarounds if user intervention can lead to a cleaner solution. Run the test server on port 8000. The app will be served as https://x.github.io/BOLT95 from gh-pages.
+Remember: playwright e2e tests need to run outside of the sandbox, please don't waste tokens trying it without elevated permissions first.
