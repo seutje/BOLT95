@@ -1,0 +1,1 @@
+During development: check every phase before checking it off, committing and moving to the next. Don't make any crazy workarounds if user intervention can lead to a cleaner solution. Run the test server on port 8000. The app will be served as https://x.github.io/BOLT95 from gh-pages.
