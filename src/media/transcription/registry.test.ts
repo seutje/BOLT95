@@ -7,6 +7,11 @@ describe("transcription model registry", () => {
       "tiny-multilingual-q5_1",
       "base-multilingual-q5_1",
     ]);
+    expect(selectableModels("en").map((model) => model.id)).toEqual([
+      "tiny-multilingual-q5_1",
+      "base-multilingual-q5_1",
+      "base-english-q5_1",
+    ]);
   });
 
   it("prefers the small registered model for high-risk audio", () => {
@@ -26,5 +31,13 @@ describe("transcription model registry", () => {
     });
     expect(choice.model.id).toBe("base-multilingual-q5_1");
     expect(choice.reason).toBe("Selected by user.");
+  });
+
+  it("uses the English-only base model for English by default when risk allows", () => {
+    const choice = selectModelForTranscription({
+      languageMode: "en",
+      audioRisk: "low",
+    });
+    expect(choice.model.id).toBe("base-english-q5_1");
   });
 });

@@ -32,10 +32,11 @@ later production adapter must preserve this evidence while assembling safe words
 The model registry is pinned to Hugging Face repository revision
 `5359861c739e955e79d9a303bcbc70fb988958b1`:
 
-| Model                |      Bytes | SHA-256                                                            |
-| -------------------- | ---------: | ------------------------------------------------------------------ |
-| `ggml-tiny-q5_1.bin` | 32,152,673 | `818710568da3ca15689e31a743197b520007872ff9576237bda97bd1b469c3d7` |
-| `ggml-base-q5_1.bin` | 59,707,625 | `422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898` |
+| Model                   |      Bytes | SHA-256                                                            |
+| ----------------------- | ---------: | ------------------------------------------------------------------ |
+| `ggml-tiny-q5_1.bin`    | 32,152,673 | `818710568da3ca15689e31a743197b520007872ff9576237bda97bd1b469c3d7` |
+| `ggml-base-q5_1.bin`    | 59,707,625 | `422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898` |
+| `ggml-base.en-q5_1.bin` | 59,721,011 | `4baf70dd0d7c4247ba2b81fafd9c01005ac77c2f9ef064e00dcf195d0e2fdd2f` |
 
 Models remain generated deployment assets and are never committed.
 

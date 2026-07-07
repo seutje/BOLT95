@@ -8,6 +8,7 @@ describe("model manifest", () => {
     expect(parsed.models.map((model) => model.id)).toEqual([
       "tiny-multilingual-q5_1",
       "base-multilingual-q5_1",
+      "base-english-q5_1",
     ]);
   });
 

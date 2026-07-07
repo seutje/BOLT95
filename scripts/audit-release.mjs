@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -29,5 +29,19 @@ assert(
 
 const packageJson = JSON.parse(read("package.json"));
 assert(packageJson.scripts["release:audit"], "release:audit script must be present");
+
+const builtManifest = resolve(root, "dist/config/models.json");
+if (existsSync(builtManifest)) {
+  const manifest = JSON.parse(read("dist/config/models.json"));
+  for (const model of manifest.models) {
+    if (!model.bundled) continue;
+    const deployedModel = resolve(root, "dist/models", model.fileName);
+    assert(existsSync(deployedModel), `${model.fileName} is missing from the built site`);
+    assert(
+      statSync(deployedModel).size === model.sizeBytes,
+      `${model.fileName} does not match the registry byte size`,
+    );
+  }
+}
 
 console.log("release audit passed");

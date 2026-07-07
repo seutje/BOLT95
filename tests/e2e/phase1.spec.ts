@@ -89,6 +89,7 @@ test("runtime model manifest is emitted below the configured base path", async (
   expect(manifest.models.map((model) => model.id)).toEqual([
     "tiny-multilingual-q5_1",
     "base-multilingual-q5_1",
+    "base-english-q5_1",
   ]);
 });
 

@@ -6,7 +6,7 @@ const revision = z.string().regex(/^[a-f0-9]{40}$/u);
 export const whisperModelDescriptorSchema = z.object({
   id: z.string().min(1),
   displayName: z.string().min(1),
-  fileName: z.string().regex(/^ggml-[a-z0-9_-]+\.bin$/u),
+  fileName: z.string().regex(/^ggml-[a-z0-9_.-]+\.bin$/u),
   url: z.url().startsWith("https://huggingface.co/ggerganov/whisper.cpp/resolve/"),
   sizeBytes: z.number().int().positive(),
   sha256,

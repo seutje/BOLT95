@@ -13,7 +13,7 @@ import {
   downloadRegisteredModel,
   storeUserSuppliedModel,
 } from "../../media/transcription/modelDownload";
-import { modelManifest, selectModelForTranscription } from "../../media/transcription/registry";
+import { selectModelForTranscription, selectableModels } from "../../media/transcription/registry";
 import type {
   ModelCacheEntry,
   TranscriptionLanguageMode,
@@ -120,6 +120,7 @@ export function TranscriptWorkspace({ audio, onTranscriptReady }: TranscriptWork
       }),
     [audio?.risk, languageMode, modelId],
   );
+  const compatibleModels = useMemo(() => selectableModels(languageMode), [languageMode]);
   const cached = cacheEntries.some((entry) => entry.id === choice.model.id);
   const cacheBytes = cacheSizeBytes(cacheEntries);
 
@@ -291,7 +292,7 @@ export function TranscriptWorkspace({ audio, onTranscriptReady }: TranscriptWork
               disabled={busy}
               onChange={(event) => setModelId(event.target.value)}
             >
-              {modelManifest.models.map((model) => (
+              {compatibleModels.map((model) => (
                 <option key={model.id} value={model.id}>
                   {model.displayName} · {formatBytes(model.sizeBytes)}
                 </option>

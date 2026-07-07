@@ -21,7 +21,7 @@
     "test:e2e:subpath": "BOLT95_BASE=/BOLT95/ playwright test",
     "build:subpath": "tsc -b && vite build --mode subpath",
     "release:audit": "node scripts/audit-release.mjs",
-    "release:check": "npm run format:check && npm run lint && npm run typecheck && npm run unit && npm run release:audit && npm run build",
+    "release:check": "npm run format:check && npm run lint && npm run typecheck && npm run unit && npm run fetch:models && npm run build && npm run release:audit",
     "preview": "vite preview --host 127.0.0.1 --port 8000",
     "preview:subpath": "vite preview --host 127.0.0.1 --port 8000 --base /BOLT95/",
     "build:whisper": "./scripts/build-whisper-wasm.sh",
