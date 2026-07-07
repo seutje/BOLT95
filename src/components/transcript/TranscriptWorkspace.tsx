@@ -25,6 +25,7 @@ import type { JobPhase } from "../../app/jobs/types";
 
 interface TranscriptWorkspaceProps {
   readonly audio: AudioImportResult | null;
+  readonly onTranscriptReady?: (result: TranscriptionResult) => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -46,7 +47,59 @@ function jobPhaseForProgress(phase: TranscriptionProgress["phase"]): JobPhase {
   return phase;
 }
 
-export function TranscriptWorkspace({ audio }: TranscriptWorkspaceProps) {
+function deterministicE2eTranscript(audio: AudioImportResult): TranscriptionResult {
+  const entries = [
+    { text: "First", normalized: ["first"], confidence: 0.98 },
+    { text: "line", normalized: ["line"], confidence: 0.98 },
+    { text: "Café", normalized: ["cafe"], confidence: 0.98 },
+    { text: "déjà", normalized: ["deja"], confidence: 0.96 },
+    { text: "vu", normalized: ["vu"], confidence: 0.96 },
+    { text: "Hello", normalized: ["hello"], confidence: 0.95 },
+    { text: "world", normalized: ["world"], confidence: 0.95 },
+    { text: "Again", normalized: ["again"], confidence: 0.82 },
+  ] as const;
+  const slot = Math.max(90, Math.floor(audio.durationMs / (entries.length + 1)));
+  const words = entries.map((entry, index) => {
+    const startMs = Math.min(audio.durationMs, index * slot);
+    const endMs = Math.min(audio.durationMs, Math.max(startMs, startMs + Math.floor(slot * 0.72)));
+    return {
+      id: `e2e-${index + 1}`,
+      text: entry.text,
+      normalized: [...entry.normalized],
+      startMs,
+      endMs,
+      confidence: entry.confidence,
+    };
+  });
+  return {
+    schemaVersion: 1,
+    durationMs: audio.durationMs,
+    language: "en",
+    modelId: "e2e-deterministic",
+    raw: {
+      languageId: 0,
+      detectedLanguage: "en",
+      wasmHeapBytes: 0,
+      peakPcmBytes: 0,
+      segments: [
+        {
+          text: "First line Café déjà vu Hello world Again",
+          startMs: 0,
+          endMs: audio.durationMs,
+          tokens: words.map((word) => ({
+            text: word.text,
+            startMs: word.startMs,
+            endMs: word.endMs,
+            probability: word.confidence,
+          })),
+        },
+      ],
+    },
+    words,
+  };
+}
+
+export function TranscriptWorkspace({ audio, onTranscriptReady }: TranscriptWorkspaceProps) {
   const setCurrentJob = useAppStore((state) => state.setCurrentJob);
   const [languageMode, setLanguageMode] = useState<TranscriptionLanguageMode>("auto");
   const [modelId, setModelId] = useState("tiny-multilingual-q5_1");
@@ -165,6 +218,7 @@ export function TranscriptWorkspace({ audio }: TranscriptWorkspaceProps) {
         onProgress: updateProgress,
       });
       setResult(transcript);
+      onTranscriptReady?.(transcript);
       setCurrentJob({
         id: crypto.randomUUID(),
         type: "transcribe",
@@ -172,6 +226,13 @@ export function TranscriptWorkspace({ audio }: TranscriptWorkspaceProps) {
         message: "Transcript created locally.",
       });
     });
+  }
+
+  function useDeterministicTranscript(): void {
+    if (!audio) return;
+    const transcript = deterministicE2eTranscript(audio);
+    setResult(transcript);
+    onTranscriptReady?.(transcript);
   }
 
   return (
@@ -291,6 +352,11 @@ export function TranscriptWorkspace({ audio }: TranscriptWorkspaceProps) {
             <button type="button" disabled={busy || !cached} onClick={() => void transcribe()}>
               Transcribe locally
             </button>
+            {import.meta.env.VITE_BOLT95_E2E === "1" && (
+              <button type="button" disabled={busy} onClick={useDeterministicTranscript}>
+                Use deterministic transcript
+              </button>
+            )}
           </section>
         </>
       )}
@@ -323,6 +389,9 @@ export function TranscriptWorkspace({ audio }: TranscriptWorkspaceProps) {
               </li>
             ))}
           </ol>
+          <button type="button" onClick={() => onTranscriptReady?.(result)}>
+            Continue to alignment
+          </button>
         </section>
       )}
     </section>

@@ -184,7 +184,7 @@ button:disabled {
 
 .stage-navigation ol {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.35rem;
   padding: 0;
   margin: 0;
@@ -413,6 +413,15 @@ button:disabled {
   line-height: 1.4;
 }
 
+.canonical-preview {
+  max-height: 13rem;
+  padding: 0.55rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
 .lyrics-actions {
   display: flex;
   gap: 0.8rem;
@@ -550,6 +559,18 @@ button:disabled {
 
 .alignment-ambiguous td {
   background: #fff2a8;
+}
+
+.review-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.review-results button {
+  margin-top: 0.35rem;
 }
 
 .workspace-sidebar {

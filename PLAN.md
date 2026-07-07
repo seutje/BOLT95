@@ -19,7 +19,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 2 — Audio and lyrics import
 - [x] Phase 3 — Canonical lyrics and alignment engine
 - [x] Phase 4 — Local Whisper transcription
-- [ ] Phase 5 — Workflow integration and alignment review
+- [x] Phase 5 — Workflow integration and alignment review
 - [ ] Phase 6 — Timeline editor and project persistence
 - [ ] Phase 7 — Timed-text and project exports
 - [ ] Phase 8 — Deterministic preview and visual styling
@@ -312,14 +312,14 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Define guarded transitions across Import, Transcribe, Align, Review, and later stages.
-- [ ] Run alignment off the main thread and keep the last valid project after any job failure.
-- [ ] In supplied-lyrics mode, display exact canonical text and use Whisper only as timing evidence.
-- [ ] In no-lyrics mode, derive editable lines from transcript segments while preserving evidence.
-- [ ] Show confidence text/icon states, match provenance details, unresolved export warnings, and “next low-confidence line.”
-- [ ] Implement cancellation and retry for each stage without repeating completed prior stages.
-- [ ] Implement selected-region re-alignment without overwriting manual timing outside the region.
-- [ ] Announce progress accessibly without fake precision and keep diagnostics content-free.
+- [x] Define guarded transitions across Import, Transcribe, Align, Review, and later stages.
+- [x] Run alignment off the main thread and keep the last valid project after any job failure.
+- [x] In supplied-lyrics mode, display exact canonical text and use Whisper only as timing evidence.
+- [x] In no-lyrics mode, derive editable lines from transcript segments while preserving evidence.
+- [x] Show confidence text/icon states, match provenance details, unresolved export warnings, and “next low-confidence line.”
+- [x] Implement cancellation and retry for each stage without repeating completed prior stages.
+- [x] Implement selected-region re-alignment without overwriting manual timing outside the region.
+- [x] Announce progress accessibly without fake precision and keep diagnostics content-free.
 
 **Tests added:** Workflow reducer/command tests; canonical-text non-mutation integration test; stage failure/retry/cancel tests; Playwright both core user flows and keyboard confidence navigation.
 
@@ -327,10 +327,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] Both “audio + lyrics” and “audio only” fixture flows reach a valid review state.
-- [ ] Supplied lyrics match the imported canonical text exactly.
-- [ ] Failure/cancellation leaves a serializable project and retry succeeds.
-- [ ] Low/unresolved regions are discoverable without relying on color.
+- [x] Both “audio + lyrics” and “audio only” fixture flows reach a valid review state.
+- [x] Supplied lyrics match the imported canonical text exactly.
+- [x] Failure/cancellation leaves a serializable project and retry succeeds.
+- [x] Low/unresolved regions are discoverable without relying on color.
 
 **Demo procedure:** Run both flows with mocked deterministic transcription, navigate warnings, cancel/retry alignment, and compare canonical input with displayed/exportable project text.
 

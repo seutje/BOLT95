@@ -5,7 +5,9 @@ import { CapabilitySummary } from "../components/common/CapabilitySummary";
 import { ModalDialog } from "../components/common/ModalDialog";
 import { StageNavigation } from "../components/common/StageNavigation";
 import { ImportWorkspace } from "../components/import/ImportWorkspace";
+import { AlignmentReviewWorkspace } from "../components/review/AlignmentReviewWorkspace";
 import { TranscriptWorkspace } from "../components/transcript/TranscriptWorkspace";
+import { availableWorkflowStages, canEnterWorkflowStage } from "./commands/workflow";
 import {
   probeRuntimeCapabilities,
   type RuntimeCapabilities,
@@ -23,6 +25,12 @@ function getCapabilities(): Promise<RuntimeCapabilities> {
 export function App() {
   const activeStage = useAppStore((state) => state.activeStage);
   const setActiveStage = useAppStore((state) => state.setActiveStage);
+  const suppliedLyrics = useAppStore((state) => state.suppliedLyrics);
+  const setSuppliedLyrics = useAppStore((state) => state.setSuppliedLyrics);
+  const transcript = useAppStore((state) => state.transcript);
+  const setTranscript = useAppStore((state) => state.setTranscript);
+  const alignment = useAppStore((state) => state.alignment);
+  const setAlignment = useAppStore((state) => state.setAlignment);
   const openDialog = useAppStore((state) => state.openDialog);
   const showDialog = useAppStore((state) => state.showDialog);
   const closeDialog = useAppStore((state) => state.closeDialog);
@@ -34,6 +42,11 @@ export function App() {
     risk: "low" | "moderate" | "high";
   } | null>(null);
   const [audioImport, setAudioImport] = useState<AudioImportResult | null>(null);
+  const workflowSnapshot = {
+    hasAudio: audioImport !== null,
+    hasTranscript: transcript !== null,
+    hasAlignment: alignment !== null,
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -82,21 +95,45 @@ export function App() {
 
         <StageNavigation
           activeStage={activeStage}
-          availableStages={audioImport ? ["import", "transcribe"] : ["import"]}
-          onSelect={setActiveStage}
+          availableStages={availableWorkflowStages(workflowSnapshot)}
+          onSelect={(stage) => {
+            if (canEnterWorkflowStage(stage, workflowSnapshot)) setActiveStage(stage);
+          }}
         />
 
         <div className="workspace">
           {activeStage === "transcribe" ? (
-            <TranscriptWorkspace audio={audioImport} />
+            <TranscriptWorkspace
+              audio={audioImport}
+              onTranscriptReady={(result) => {
+                setTranscript(result);
+                setAlignment(null);
+                setActiveStage("align");
+              }}
+            />
+          ) : activeStage === "align" || activeStage === "review" ? (
+            <AlignmentReviewWorkspace
+              suppliedLyrics={suppliedLyrics}
+              transcript={transcript}
+              alignment={alignment}
+              onAlignmentReady={setAlignment}
+            />
           ) : (
             <ImportWorkspace
               onAudioChange={(summary) => {
                 setAudioSummary(summary);
-                if (!summary) setAudioImport(null);
+                if (!summary) {
+                  setAudioImport(null);
+                  setSuppliedLyrics(null);
+                  setTranscript(null);
+                  setAlignment(null);
+                }
               }}
-              onContinue={(audio) => {
+              onContinue={(audio, lyrics) => {
                 setAudioImport(audio);
+                setSuppliedLyrics(lyrics);
+                setTranscript(null);
+                setAlignment(null);
                 setActiveStage("transcribe");
               }}
             />
@@ -129,6 +166,14 @@ export function App() {
                   <p>No project loaded.</p>
                   <p>Select an MP3 to create an in-memory project input.</p>
                 </>
+              )}
+              {transcript && <p>{transcript.words.length} transcript words ready.</p>}
+              {alignment && (
+                <p>
+                  {alignment.lines.length} timed lines ·{" "}
+                  {alignment.lines.filter((line) => line.reviewState !== "accepted").length} need
+                  review
+                </p>
               )}
             </section>
           </aside>

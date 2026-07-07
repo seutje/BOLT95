@@ -9,9 +9,10 @@ const stages: readonly StageDefinition[] = [
   { id: "import", label: "1. Import" },
   { id: "transcribe", label: "2. Transcribe" },
   { id: "align", label: "3. Align" },
-  { id: "edit", label: "4. Edit" },
-  { id: "style", label: "5. Style" },
-  { id: "export", label: "6. Export" },
+  { id: "review", label: "4. Review" },
+  { id: "edit", label: "5. Edit" },
+  { id: "style", label: "6. Style" },
+  { id: "export", label: "7. Export" },
 ];
 
 interface StageNavigationProps {

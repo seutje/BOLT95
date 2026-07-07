@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppError } from "../../app/errors/AppError";
 import { useAppStore } from "../../app/state/store";
 import { AlignmentFixtureViewer } from "../alignment/AlignmentFixtureViewer";
+import { createCanonicalLyrics, type CanonicalLyrics } from "../../domain/lyrics/canonical";
 import { parseLyrics, readLyricsFile, type ParsedLyrics } from "../../domain/lyrics/parser";
 import { importAudio, releaseAudioImport } from "../../media/audio/importAudio";
 import { formatDuration } from "../../media/audio/format";
@@ -12,7 +13,7 @@ interface ImportWorkspaceProps {
   readonly onAudioChange: (
     summary: { name: string; durationMs: number; risk: AudioImportResult["risk"] } | null,
   ) => void;
-  readonly onContinue: (audio: AudioImportResult) => void;
+  readonly onContinue: (audio: AudioImportResult, lyrics: CanonicalLyrics | null) => void;
 }
 
 type AudioView = Omit<AudioImportResult, "file" | "pcm"> & {
@@ -274,7 +275,9 @@ export function ImportWorkspace({ onAudioChange, onContinue }: ImportWorkspacePr
         type="button"
         disabled={!audio || (audio.risk === "high" && !highRiskAccepted)}
         onClick={() => {
-          if (audioRef.current) onContinue(audioRef.current);
+          if (audioRef.current) {
+            onContinue(audioRef.current, lyricsText ? createCanonicalLyrics(lyrics) : null);
+          }
         }}
       >
         Continue to transcription

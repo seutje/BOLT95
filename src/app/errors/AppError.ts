@@ -4,6 +4,7 @@ export type AppErrorCode =
   | "INPUT_INVALID"
   | "JOB_CANCELLED"
   | "STORAGE_UNAVAILABLE"
+  | "WORKER_FAILED"
   | "UNEXPECTED_FAILURE";
 
 export interface AppErrorOptions {

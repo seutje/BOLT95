@@ -1,4 +1,10 @@
 import type { SerializedAppError } from "../app/errors/AppError";
+import type {
+  AlignmentOptions,
+  AlignmentResult,
+  TranscriptResult,
+} from "../domain/alignment/engine";
+import type { CanonicalLyrics } from "../domain/lyrics/canonical";
 import type { TranscriptionProgress, WhisperRawResult } from "../media/transcription/types";
 import type { WaveformData } from "../media/audio/types";
 
@@ -110,6 +116,36 @@ export type WhisperWorkerResponse =
   | WhisperCancelledResponse
   | WhisperDisposedResponse
   | WhisperFailureResponse;
+
+export interface AlignmentRunRequest {
+  readonly type: "alignment/run";
+  readonly requestId: string;
+  readonly canonical: CanonicalLyrics;
+  readonly transcript: TranscriptResult;
+  readonly options?: AlignmentOptions;
+}
+
+export interface AlignmentProgressResponse {
+  readonly type: "alignment/progress";
+  readonly requestId: string;
+  readonly message: string;
+}
+
+export interface AlignmentResultResponse {
+  readonly type: "alignment/result";
+  readonly requestId: string;
+  readonly result: AlignmentResult;
+}
+
+export interface AlignmentFailureResponse {
+  readonly type: "alignment/failure";
+  readonly requestId: string;
+  readonly error: SerializedAppError;
+}
+
+export type AlignmentWorkerRequest = AlignmentRunRequest;
+export type AlignmentWorkerResponse =
+  AlignmentProgressResponse | AlignmentResultResponse | AlignmentFailureResponse;
 
 export function restoreWaveform(response: AudioCompleteResponse["waveform"]): WaveformData {
   return {

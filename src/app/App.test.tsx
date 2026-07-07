@@ -47,7 +47,14 @@ import { useAppStore } from "./state/store";
 
 describe("App shell", () => {
   beforeEach(() => {
-    useAppStore.setState({ activeStage: "import", openDialog: null, currentJob: null });
+    useAppStore.setState({
+      activeStage: "import",
+      openDialog: null,
+      currentJob: null,
+      suppliedLyrics: null,
+      transcript: null,
+      alignment: null,
+    });
   });
 
   it("shows local-processing privacy and guarded stages", async () => {
