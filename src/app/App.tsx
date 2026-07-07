@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { buildInfo } from "./buildInfo";
 import { useAppStore } from "./state/store";
 import { CapabilitySummary } from "../components/common/CapabilitySummary";
 import { ModalDialog } from "../components/common/ModalDialog";
 import { StageNavigation } from "../components/common/StageNavigation";
+import { ExportWorkspace } from "../components/export/ExportWorkspace";
 import { ImportWorkspace } from "../components/import/ImportWorkspace";
 import { AlignmentReviewWorkspace } from "../components/review/AlignmentReviewWorkspace";
 import { TimelineEditorWorkspace } from "../components/timeline/TimelineEditorWorkspace";
@@ -47,12 +48,18 @@ export function App() {
   } | null>(null);
   const [audioImport, setAudioImport] = useState<AudioImportResult | null>(null);
   const [restoredProject, setRestoredProject] = useState<EditorProject | null>(null);
+  const [currentProject, setCurrentProject] = useState<EditorProject | null>(null);
   const [savedProjects, setSavedProjects] = useState<readonly EditorProject[]>([]);
   const workflowSnapshot = {
     hasAudio: audioImport !== null,
     hasTranscript: transcript !== null,
     hasAlignment: alignment !== null,
+    hasEditorProject: currentProject !== null,
   };
+
+  const handleProjectChange = useCallback((project: EditorProject | null) => {
+    setCurrentProject(project);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -120,13 +127,20 @@ export function App() {
           }}
         />
 
-        <div className={activeStage === "edit" ? "workspace workspace-full" : "workspace"}>
+        <div
+          className={
+            activeStage === "edit" || activeStage === "export"
+              ? "workspace workspace-full"
+              : "workspace"
+          }
+        >
           {activeStage === "transcribe" ? (
             <TranscriptWorkspace
               audio={audioImport}
               onTranscriptReady={(result) => {
                 setTranscript(result);
                 setAlignment(null);
+                setCurrentProject(null);
                 setActiveStage("align");
               }}
             />
@@ -135,13 +149,17 @@ export function App() {
               suppliedLyrics={suppliedLyrics}
               transcript={transcript}
               alignment={alignment}
-              onAlignmentReady={setAlignment}
+              onAlignmentReady={(result) => {
+                setAlignment(result);
+                setCurrentProject(null);
+              }}
             />
           ) : activeStage === "edit" ? (
             <TimelineEditorWorkspace
               audio={audioImport}
               alignment={alignment}
               restoredProject={restoredProject}
+              onProjectChange={handleProjectChange}
               onAudioRelink={(audio) => {
                 setAudioImport(audio);
                 setAudioSummary({
@@ -151,6 +169,8 @@ export function App() {
                 });
               }}
             />
+          ) : activeStage === "export" ? (
+            <ExportWorkspace project={currentProject} />
           ) : (
             <ImportWorkspace
               onAudioChange={(summary) => {
@@ -161,11 +181,13 @@ export function App() {
                   setSuppliedLyrics(null);
                   setTranscript(null);
                   setAlignment(null);
+                  setCurrentProject(null);
                 }
               }}
               onContinue={(audio, lyrics) => {
                 setAudioImport(audio);
                 setRestoredProject(null);
+                setCurrentProject(null);
                 setSuppliedLyrics(lyrics);
                 setTranscript(null);
                 setAlignment(null);
@@ -222,6 +244,7 @@ export function App() {
                         onClick={() => {
                           setRestoredProject(project);
                           setAlignment(project.alignment);
+                          setCurrentProject(project);
                           setAudioSummary({
                             name: project.audio.fileName,
                             durationMs: project.audio.durationMs,

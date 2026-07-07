@@ -21,7 +21,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 4 — Local Whisper transcription
 - [x] Phase 5 — Workflow integration and alignment review
 - [x] Phase 6 — Timeline editor and project persistence
-- [ ] Phase 7 — Timed-text and project exports
+- [x] Phase 7 — Timed-text and project exports
 - [ ] Phase 8 — Deterministic preview and visual styling
 - [ ] Phase 9 — Draft video export
 - [ ] Phase 10 — Full export, fallbacks, and cancellation
@@ -395,13 +395,13 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Define documented rounding, minimum cue duration, overlap repair, empty/annotation behavior, metadata, Unicode, and filename sanitation policies.
-- [ ] Implement plain LRC and enhanced LRC serializers.
-- [ ] Implement SRT and WebVTT serializers.
-- [ ] Implement project JSON export/import round-trip with version/build metadata and no embedded audio.
-- [ ] Validate monotonic output before enabling download and show low-confidence/unresolved warnings.
-- [ ] Generate Blob downloads, revoke object URLs, and reject filename/path injection.
-- [ ] Add text preview and accessible success/failure status.
+- [x] Define documented rounding, minimum cue duration, overlap repair, empty/annotation behavior, metadata, Unicode, and filename sanitation policies.
+- [x] Implement plain LRC and enhanced LRC serializers.
+- [x] Implement SRT and WebVTT serializers.
+- [x] Implement project JSON export/import round-trip with version/build metadata and no embedded audio.
+- [x] Validate monotonic output before enabling download and show low-confidence/unresolved warnings.
+- [x] Generate Blob downloads, revoke object URLs, and reject filename/path injection.
+- [x] Add text preview and accessible success/failure status.
 
 **Tests added:** Golden serializer tests for Unicode, hours, rounding boundaries, overlaps, annotations, and word timing; property tests for monotonic timestamps; project round-trip; Playwright download/content checks.
 
@@ -409,10 +409,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] All four subtitle formats pass golden tests and download with safe names/UTF-8 content.
-- [ ] Every cue is valid, monotonic, and meets documented duration/overlap rules.
-- [ ] Project JSON round-trips without audio and preserves canonical text/manual provenance.
-- [ ] Subtitle export works with all video APIs disabled.
+- [x] All four subtitle formats pass golden tests and download with safe names/UTF-8 content.
+- [x] Every cue is valid, monotonic, and meets documented duration/overlap rules.
+- [x] Project JSON round-trips without audio and preserves canonical text/manual provenance.
+- [x] Subtitle export works with all video APIs disabled.
 
 **Demo procedure:** Export every format from the Unicode/repeated-section fixture, inspect downloaded content and MIME/name, then disable video APIs and repeat LRC export.
 

@@ -836,6 +836,48 @@ button:disabled {
   margin-top: 0.75rem;
 }
 
+.export-workspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.export-format-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 0.8rem;
+}
+
+.export-format-list label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.5rem;
+  align-items: center;
+  padding: 0.45rem;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
+.export-format-list small {
+  grid-column: 2;
+  color: #555;
+}
+
+.export-preview {
+  max-height: 28rem;
+  padding: 0.75rem;
+  overflow: auto;
+  background: #fff;
+  border: 2px inset #fff;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.export-warnings {
+  margin-bottom: 0;
+}
+
 @media (max-width: 54rem) {
   .workspace {
     grid-template-columns: 1fr;

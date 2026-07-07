@@ -4,6 +4,7 @@ export interface WorkflowSnapshot {
   readonly hasAudio: boolean;
   readonly hasTranscript: boolean;
   readonly hasAlignment: boolean;
+  readonly hasEditorProject?: boolean;
 }
 
 const stageOrder: readonly WorkflowStage[] = [
@@ -21,6 +22,7 @@ export function availableWorkflowStages(snapshot: WorkflowSnapshot): readonly Wo
   if (snapshot.hasAudio) available.push("transcribe");
   if (snapshot.hasTranscript) available.push("align");
   if (snapshot.hasAlignment) available.push("review", "edit");
+  if (snapshot.hasEditorProject) available.push("export");
   return available;
 }
 

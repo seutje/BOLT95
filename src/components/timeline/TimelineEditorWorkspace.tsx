@@ -13,6 +13,7 @@ import {
 import { buildInfo } from "../../app/buildInfo";
 import type { AlignmentResult } from "../../domain/alignment/engine";
 import type { EditorProject } from "../../domain/project/schema";
+import { downloadText } from "../../infrastructure/downloads/blobDownload";
 import {
   clearProjects,
   deleteProject,
@@ -29,6 +30,7 @@ interface TimelineEditorWorkspaceProps {
   readonly alignment: AlignmentResult | null;
   readonly restoredProject?: EditorProject | null;
   readonly onAudioRelink: (audio: AudioImportResult) => void;
+  readonly onProjectChange?: (project: EditorProject | null) => void;
 }
 
 function msToSeconds(ms: number): string {
@@ -126,6 +128,7 @@ export function TimelineEditorWorkspace({
   alignment,
   restoredProject = null,
   onAudioRelink,
+  onProjectChange,
 }: TimelineEditorWorkspaceProps) {
   const initialProject = useMemo(
     () => restoredProject ?? (audio && alignment ? createEditorProject(audio, alignment) : null),
@@ -142,6 +145,10 @@ export function TimelineEditorWorkspace({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const clockRef = useRef<AudioPlaybackClock | null>(null);
   const project = session?.project ?? null;
+
+  useEffect(() => {
+    onProjectChange?.(project);
+  }, [onProjectChange, project]);
 
   useEffect(() => {
     void listProjects()
@@ -255,12 +262,7 @@ export function TimelineEditorWorkspace({
   function exportProject(): void {
     if (!session) return;
     const payload = JSON.stringify(serializeProjectFile(session.project, buildInfo), null, 2);
-    const url = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = projectExportName(session.project);
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadText(payload, "application/json; charset=utf-8", projectExportName(session.project));
     setStatus("Project JSON exported without audio.");
   }
 
