@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BuildInfo } from "../../app/buildInfo";
 import type { RuntimeCapabilities } from "../capabilities/runtime";
-import { createSafeDiagnostics } from "./diagnostics";
+import { createSafeDiagnostics, serializeSafeDiagnostics } from "./diagnostics";
 
 const build: BuildInfo = {
   appVersion: "1.0.0",
@@ -33,5 +33,13 @@ describe("safe diagnostics", () => {
     expect(Object.keys(diagnostics)).not.toContain("lyrics");
     expect(Object.keys(diagnostics)).not.toContain("fileName");
     expect(Object.keys(diagnostics)).not.toContain("projectTitle");
+  });
+
+  it("serializes diagnostics without content-bearing fields", () => {
+    const serialized = serializeSafeDiagnostics(
+      createSafeDiagnostics(build, capabilities, "browser with /Users/name/song.mp3"),
+    );
+    expect(serialized).toContain('"capabilityMode": "standard"');
+    expect(serialized).not.toMatch(/lyrics|transcript|audioBytes|projectTitle/u);
   });
 });

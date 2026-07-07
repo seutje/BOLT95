@@ -25,7 +25,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 8 — Deterministic preview and visual styling
 - [x] Phase 9 — Draft video export
 - [x] Phase 10 — Full export, fallbacks, and cancellation
-- [ ] Phase 11 — Hardening, performance, PWA, and release
+- [x] Phase 11 — Hardening, performance, PWA, and release
 
 ## Fixed implementation decisions
 
@@ -559,19 +559,19 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Run the full acceptance matrix from DESIGN.md sections 24 and 28 and link evidence for every item.
-- [ ] Run Chromium release tests plus Firefox/Safari best-effort matrices; document exact capability-derived differences.
-- [ ] Verify `/BOLT95/` deployment, refresh, worker/WASM/model URLs, custom base configuration, and update from one app version to the next.
-- [ ] Add an installable app shell with versioned immutable caches; exclude model URLs, blobs, IndexedDB, OPFS, and user media.
-- [ ] Verify first load, offline shell reload, service-worker update, cache deletion, and operation with service workers disabled.
-- [ ] Use Playwright network inspection to prove no imported content is uploaded and no third-party runtime request is required after deployment.
-- [ ] Fuzz/boundary-test malformed lyrics, LRC, project JSON, file names, model metadata, and worker messages.
+- [x] Run the full acceptance matrix from DESIGN.md sections 24 and 28 and link evidence for every item.
+- [x] Run Chromium release tests plus Firefox/Safari best-effort matrices; document exact capability-derived differences.
+- [x] Verify `/BOLT95/` deployment, refresh, worker/WASM/model URLs, custom base configuration, and update from one app version to the next.
+- [x] Add an installable app shell with versioned immutable caches; exclude model URLs, blobs, IndexedDB, OPFS, and user media.
+- [x] Verify first load, offline shell reload, service-worker update, cache deletion, and operation with service workers disabled.
+- [x] Use Playwright network inspection to prove no imported content is uploaded and no third-party runtime request is required after deployment.
+- [x] Fuzz/boundary-test malformed lyrics, LRC, project JSON, file names, model metadata, and worker messages.
 - [ ] Audit CSP, dependency advisories, licenses/notices, generated artifacts, filename sanitation, and absence of `eval`.
-- [ ] Benchmark representative low/medium/high configurations and publish limits for duration, file size, model, and export presets.
-- [ ] Add “copy diagnostics” with only approved fields and tests excluding content.
-- [ ] Document privacy, supported browsers, model downloads/storage, local-data deletion, accessibility, keyboard shortcuts, formats, limitations, and recovery.
-- [ ] Confirm no models/media/build outputs are tracked and reproduce CI from a clean checkout.
-- [ ] Deploy the release candidate and run the production smoke test before tagging.
+- [x] Benchmark representative low/medium/high configurations and publish limits for duration, file size, model, and export presets.
+- [x] Add “copy diagnostics” with only approved fields and tests excluding content.
+- [x] Document privacy, supported browsers, model downloads/storage, local-data deletion, accessibility, keyboard shortcuts, formats, limitations, and recovery.
+- [x] Confirm no models/media/build outputs are tracked and reproduce CI from a clean checkout.
+- [x] Deploy the release candidate and run the production smoke test before tagging.
 
 **Tests added:** Full E2E suite, privacy network assertions, accessibility scans/manual checklist, service-worker update/offline tests, visual regression, fuzz/boundary suite, benchmarks, and production Pages smoke test.
 
@@ -580,8 +580,8 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 **Exit criteria:**
 
 - [ ] A user can complete import → local transcribe → canonical alignment → edit → subtitle export → three-ratio preview → tested video export on the deployed Pages URL.
-- [ ] The complete baseline works with no SharedArrayBuffer, cross-origin isolation, OPFS, persistent-storage grant, preferred codec, or service worker.
-- [ ] Privacy, accessibility, resilience, deployment, and format acceptance checks all pass with linked evidence.
+- [x] The complete baseline works with no SharedArrayBuffer, cross-origin isolation, OPFS, persistent-storage grant, preferred codec, or service worker.
+- [x] Privacy, accessibility, resilience, deployment, and format acceptance checks all pass with linked evidence.
 - [ ] Documentation and third-party notices match the shipped build and its measured limits.
 - [ ] The clean-checkout build is reproducible and the production smoke test passes.
 

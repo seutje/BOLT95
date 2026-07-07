@@ -26,6 +26,7 @@ npm run typecheck
 npm run unit
 npm run test:e2e
 npm run build
+npm run release:check
 ```
 
 Browser tests run against both `/` and `/BOLT95/`. Generated Whisper models, WASM,
@@ -33,4 +34,6 @@ fixtures, browser artifacts, and production builds are intentionally not committ
 
 See [PLAN.md](PLAN.md), [DESIGN.md](DESIGN.md), and
 [docs/compatibility.md](docs/compatibility.md) for implementation and compatibility
-details.
+details. Release privacy, limits, and production smoke evidence are documented in
+[docs/privacy.md](docs/privacy.md), [docs/limits.md](docs/limits.md), and
+[docs/release/phase11-evidence.md](docs/release/phase11-evidence.md).

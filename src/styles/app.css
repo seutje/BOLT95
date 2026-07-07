@@ -724,6 +724,20 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.diagnostics-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 0.75rem;
+}
+
+.diagnostics-status {
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0;
+  background: #ffffdf;
+  border: 2px inset #fff;
+}
+
 .transcript-result ol {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));

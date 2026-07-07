@@ -16,7 +16,11 @@ import {
   probeRuntimeCapabilities,
   type RuntimeCapabilities,
 } from "../infrastructure/capabilities/runtime";
-import { createSafeDiagnostics } from "../infrastructure/diagnostics/diagnostics";
+import {
+  createSafeDiagnostics,
+  serializeSafeDiagnostics,
+} from "../infrastructure/diagnostics/diagnostics";
+import { clearLocalData } from "../infrastructure/storage/localData";
 import { listProjects } from "../infrastructure/storage/projects";
 import { releaseAudioImport } from "../media/audio/importAudio";
 import type { AudioImportResult } from "../media/audio/types";
@@ -51,6 +55,7 @@ export function App() {
   const [restoredProject, setRestoredProject] = useState<EditorProject | null>(null);
   const [currentProject, setCurrentProject] = useState<EditorProject | null>(null);
   const [savedProjects, setSavedProjects] = useState<readonly EditorProject[]>([]);
+  const [diagnosticsStatus, setDiagnosticsStatus] = useState<string | null>(null);
   const workflowSnapshot = {
     hasAudio: audioImport !== null,
     hasTranscript: transcript !== null,
@@ -92,6 +97,33 @@ export function App() {
   const diagnostics = capabilities
     ? createSafeDiagnostics(buildInfo, capabilities, navigator.userAgent)
     : null;
+
+  const handleCopyDiagnostics = useCallback(async () => {
+    if (!diagnostics) return;
+    try {
+      await navigator.clipboard.writeText(serializeSafeDiagnostics(diagnostics));
+      setDiagnosticsStatus("Diagnostics copied.");
+    } catch {
+      setDiagnosticsStatus(
+        "Clipboard permission was denied. Select the diagnostics text manually.",
+      );
+    }
+  }, [diagnostics]);
+
+  const handleClearLocalData = useCallback(async () => {
+    try {
+      const result = await clearLocalData();
+      setSavedProjects([]);
+      setRestoredProject(null);
+      setDiagnosticsStatus(
+        `Local projects, cached models, and app shell caches cleared (${result.cacheNamesDeleted.length} caches).`,
+      );
+    } catch {
+      setDiagnosticsStatus(
+        "Local data could not be cleared. Use browser site settings to clear it.",
+      );
+    }
+  }, []);
 
   return (
     <main className="desktop-shell">
@@ -325,7 +357,10 @@ export function App() {
           requests are limited to static application files and model files you explicitly choose to
           download.
         </p>
-        <p>Clearing site data removes locally cached projects and models.</p>
+        <p>
+          Clearing local data removes autosaved projects, cached models, and app shell caches from
+          this browser.
+        </p>
       </ModalDialog>
 
       <ModalDialog
@@ -335,8 +370,21 @@ export function App() {
       >
         <p>Diagnostics never include lyrics, transcripts, file names, paths, or media bytes.</p>
         <pre className="diagnostics-output">
-          {diagnostics ? JSON.stringify(diagnostics, null, 2) : "Capability check pending."}
+          {diagnostics ? serializeSafeDiagnostics(diagnostics) : "Capability check pending."}
         </pre>
+        <div className="diagnostics-actions">
+          <button type="button" onClick={handleCopyDiagnostics} disabled={!diagnostics}>
+            Copy diagnostics
+          </button>
+          <button type="button" onClick={handleClearLocalData}>
+            Clear local data
+          </button>
+        </div>
+        {diagnosticsStatus && (
+          <p className="diagnostics-status" role="status">
+            {diagnosticsStatus}
+          </p>
+        )}
       </ModalDialog>
     </main>
   );

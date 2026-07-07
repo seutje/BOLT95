@@ -34,3 +34,7 @@ export function createSafeDiagnostics(
     indexedDb: capabilities.indexedDb,
   };
 }
+
+export function serializeSafeDiagnostics(diagnostics: SafeDiagnostics): string {
+  return `${JSON.stringify(diagnostics, null, 2)}\n`;
+}

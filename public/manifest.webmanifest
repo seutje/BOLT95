@@ -1,0 +1,18 @@
+{
+  "name": "BOLT95 Local Lyric Studio",
+  "short_name": "BOLT95",
+  "description": "Create timed lyrics and lyric videos entirely in your browser.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#008080",
+  "theme_color": "#008080",
+  "icons": [
+    {
+      "src": "icons/bolt95.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
