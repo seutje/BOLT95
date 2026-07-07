@@ -20,6 +20,7 @@ import {
   saveProject,
 } from "../../infrastructure/storage/projects";
 import { fingerprintBytes } from "../../media/audio/fingerprint";
+import { importAudio } from "../../media/audio/importAudio";
 import { AudioPlaybackClock } from "../../media/audio/playback";
 import type { AudioImportResult } from "../../media/audio/types";
 
@@ -27,6 +28,7 @@ interface TimelineEditorWorkspaceProps {
   readonly audio: AudioImportResult | null;
   readonly alignment: AlignmentResult | null;
   readonly restoredProject?: EditorProject | null;
+  readonly onAudioRelink: (audio: AudioImportResult) => void;
 }
 
 function msToSeconds(ms: number): string {
@@ -108,6 +110,7 @@ export function TimelineEditorWorkspace({
   audio,
   alignment,
   restoredProject = null,
+  onAudioRelink,
 }: TimelineEditorWorkspaceProps) {
   const initialProject = useMemo(
     () => restoredProject ?? (audio && alignment ? createEditorProject(audio, alignment) : null),
@@ -243,12 +246,27 @@ export function TimelineEditorWorkspace({
 
   async function relinkAudio(file: File): Promise<void> {
     if (!session) return;
+    setStatus("Checking relinked audio fingerprint...");
     const fingerprint = await fingerprintBytes(await file.arrayBuffer());
-    setStatus(
-      fingerprint === session.project.audio.fingerprint
-        ? "Relinked audio fingerprint matches the project."
-        : "Relinked audio fingerprint does not match this project.",
-    );
+    if (fingerprint !== session.project.audio.fingerprint) {
+      setStatus("Relinked audio fingerprint does not match this project.");
+      return;
+    }
+    setStatus("Fingerprint matches. Preparing audio for playback...");
+    try {
+      const imported = await importAudio(file, {
+        signal: new AbortController().signal,
+        onProgress: (job) => setStatus(job.message ?? "Preparing relinked audio..."),
+      });
+      onAudioRelink(imported);
+      setStatus("Relinked audio fingerprint matches the project. Playback is ready.");
+    } catch (error) {
+      setStatus(
+        error instanceof Error
+          ? `Relink failed: ${error.message}`
+          : "Relink failed. Choose the original MP3 and try again.",
+      );
+    }
   }
 
   if (!session) {

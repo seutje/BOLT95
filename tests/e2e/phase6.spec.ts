@@ -51,6 +51,14 @@ test("timeline edits are undoable, autosaved, restorable, and relinkable", async
 
   await page.getByLabel("Relink audio").setInputFiles(fixture("audio/short-valid.mp3"));
   await expect(page.getByText(/fingerprint matches/u)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play" })).toBeEnabled();
+  await page.getByRole("button", { name: "Play" }).click();
+  await page.waitForTimeout(250);
+  expect(
+    pageErrors.filter((message) => /NotSupportedError|supported sources/u.test(message)),
+  ).toEqual([]);
+  await expect(page.getByText(/Playback failed/u)).toHaveCount(0);
+
   await page.getByLabel("Relink audio").setInputFiles(fixture("audio/corrupt.mp3"));
   await expect(page.getByText(/does not match/u)).toBeVisible();
 

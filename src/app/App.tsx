@@ -16,6 +16,7 @@ import {
 } from "../infrastructure/capabilities/runtime";
 import { createSafeDiagnostics } from "../infrastructure/diagnostics/diagnostics";
 import { listProjects } from "../infrastructure/storage/projects";
+import { releaseAudioImport } from "../media/audio/importAudio";
 import type { AudioImportResult } from "../media/audio/types";
 
 let capabilityProbe: Promise<RuntimeCapabilities> | undefined;
@@ -72,6 +73,13 @@ export function App() {
       .then(setSavedProjects)
       .catch(() => setSavedProjects([]));
   }, []);
+
+  useEffect(
+    () => () => {
+      if (audioImport) releaseAudioImport(audioImport);
+    },
+    [audioImport],
+  );
 
   const diagnostics = capabilities
     ? createSafeDiagnostics(buildInfo, capabilities, navigator.userAgent)
@@ -134,6 +142,14 @@ export function App() {
               audio={audioImport}
               alignment={alignment}
               restoredProject={restoredProject}
+              onAudioRelink={(audio) => {
+                setAudioImport(audio);
+                setAudioSummary({
+                  name: audio.file.name,
+                  durationMs: audio.durationMs,
+                  risk: audio.risk,
+                });
+              }}
             />
           ) : (
             <ImportWorkspace
