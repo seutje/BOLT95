@@ -23,7 +23,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 6 — Timeline editor and project persistence
 - [x] Phase 7 — Timed-text and project exports
 - [x] Phase 8 — Deterministic preview and visual styling
-- [ ] Phase 9 — Draft video export
+- [x] Phase 9 — Draft video export
 - [ ] Phase 10 — Full export, fallbacks, and cancellation
 - [ ] Phase 11 — Hardening, performance, PWA, and release
 
@@ -474,16 +474,16 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Implement backend support probing and expose only verified codec/container combinations.
-- [ ] Implement draft presets at a fixed documented frame rate and bounded duration.
-- [ ] Render frames sequentially from the shared renderer and close every `VideoFrame` after encode.
-- [ ] Encode/mux original decoded audio with timestamps derived from one media clock.
-- [ ] Stream/batch output rather than retaining frames or the full encoded chunk list where the muxer allows.
-- [ ] Report preparation/frame/flush/finalization progress without invented time remaining.
-- [ ] Estimate risk from duration, resolution, frame rate, device memory, and codec support.
-- [ ] Cancel by aborting scheduling, closing encoders/frames, discarding partial output, and returning to a valid project.
-- [ ] Verify the generated Blob can be decoded, duration drift is within 100 ms for the fixture, and the last lyric frame is present.
-- [ ] Disable the backend with an actionable explanation when capability probes fail.
+- [x] Implement backend support probing and expose only verified codec/container combinations.
+- [x] Implement draft presets at a fixed documented frame rate and bounded duration.
+- [x] Render frames sequentially from the shared renderer and close every `VideoFrame` after encode.
+- [x] Encode/mux original decoded audio with timestamps derived from one media clock.
+- [x] Stream/batch output rather than retaining frames or the full encoded chunk list where the muxer allows.
+- [x] Report preparation/frame/flush/finalization progress without invented time remaining.
+- [x] Estimate risk from duration, resolution, frame rate, device memory, and codec support.
+- [x] Cancel by aborting scheduling, closing encoders/frames, discarding partial output, and returning to a valid project.
+- [x] Verify the generated Blob can be decoded, duration drift is within 100 ms for the fixture, and the last lyric frame is present.
+- [x] Disable the backend with an actionable explanation when capability probes fail.
 
 **Tests added:** Backend selection and estimate tests; five-second integration encode/decode test; duration/sync assertion; cancellation/resource instrumentation; Playwright export/download/playback flow.
 
@@ -491,11 +491,11 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] A deterministic five-second 540p WebM with audio exports and plays in primary Chromium.
-- [ ] Preview and exported reference frames match within the documented pixel tolerance.
-- [ ] Audio/video duration mismatch is no greater than 100 ms on the fixture.
-- [ ] Cancellation releases resources and a second export succeeds without reload.
-- [ ] Unsupported environments retain all editing and subtitle functionality.
+- [x] A deterministic five-second 540p WebM with audio exports and plays in primary Chromium.
+- [x] Preview and exported reference frames match within the documented pixel tolerance.
+- [x] Audio/video duration mismatch is no greater than 100 ms on the fixture.
+- [x] Cancellation releases resources and a second export succeeds without reload.
+- [x] Unsupported environments retain all editing and subtitle functionality.
 
 **Demo procedure:** Export each draft aspect ratio, inspect progress and playback, compare fixed-time screenshots with preview, cancel midway, restart, and emulate missing WebCodecs.
 

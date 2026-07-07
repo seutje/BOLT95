@@ -177,7 +177,7 @@ export function App() {
               onProjectChange={handleProjectChange}
             />
           ) : activeStage === "export" ? (
-            <ExportWorkspace project={currentProject} />
+            <ExportWorkspace audio={audioImport} project={currentProject} />
           ) : (
             <ImportWorkspace
               onAudioChange={(summary) => {
