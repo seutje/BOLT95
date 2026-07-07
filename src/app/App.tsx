@@ -5,11 +5,13 @@ import { CapabilitySummary } from "../components/common/CapabilitySummary";
 import { ModalDialog } from "../components/common/ModalDialog";
 import { StageNavigation } from "../components/common/StageNavigation";
 import { ImportWorkspace } from "../components/import/ImportWorkspace";
+import { TranscriptWorkspace } from "../components/transcript/TranscriptWorkspace";
 import {
   probeRuntimeCapabilities,
   type RuntimeCapabilities,
 } from "../infrastructure/capabilities/runtime";
 import { createSafeDiagnostics } from "../infrastructure/diagnostics/diagnostics";
+import type { AudioImportResult } from "../media/audio/types";
 
 let capabilityProbe: Promise<RuntimeCapabilities> | undefined;
 
@@ -31,6 +33,7 @@ export function App() {
     durationMs: number;
     risk: "low" | "moderate" | "high";
   } | null>(null);
+  const [audioImport, setAudioImport] = useState<AudioImportResult | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -77,10 +80,27 @@ export function App() {
           </button>
         </div>
 
-        <StageNavigation activeStage={activeStage} onSelect={setActiveStage} />
+        <StageNavigation
+          activeStage={activeStage}
+          availableStages={audioImport ? ["import", "transcribe"] : ["import"]}
+          onSelect={setActiveStage}
+        />
 
         <div className="workspace">
-          <ImportWorkspace onAudioChange={setAudioSummary} />
+          {activeStage === "transcribe" ? (
+            <TranscriptWorkspace audio={audioImport} />
+          ) : (
+            <ImportWorkspace
+              onAudioChange={(summary) => {
+                setAudioSummary(summary);
+                if (!summary) setAudioImport(null);
+              }}
+              onContinue={(audio) => {
+                setAudioImport(audio);
+                setActiveStage("transcribe");
+              }}
+            />
+          )}
 
           <aside className="workspace-sidebar">
             <CapabilitySummary

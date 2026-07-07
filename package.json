@@ -28,6 +28,7 @@
     "inspect:wasm": "node scripts/inspect-whisper-build.mjs"
   },
   "dependencies": {
+    "dexie": "4.4.4",
     "mediabunny": "1.50.6",
     "react": "19.2.7",
     "react-dom": "19.2.7",

@@ -699,6 +699,32 @@ button:disabled {
   overflow-wrap: anywhere;
 }
 
+.transcript-result ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+}
+
+.transcript-result li {
+  min-width: 0;
+  padding: 0.35rem;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
+.transcript-result li span,
+.transcript-result li small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.transcript-result li small {
+  margin-top: 0.15rem;
+  color: #444;
+}
+
 @media (max-width: 54rem) {
   .workspace {
     grid-template-columns: 1fr;

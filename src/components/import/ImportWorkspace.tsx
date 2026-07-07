@@ -12,6 +12,7 @@ interface ImportWorkspaceProps {
   readonly onAudioChange: (
     summary: { name: string; durationMs: number; risk: AudioImportResult["risk"] } | null,
   ) => void;
+  readonly onContinue: (audio: AudioImportResult) => void;
 }
 
 type AudioView = Omit<AudioImportResult, "file" | "pcm"> & {
@@ -32,7 +33,7 @@ function presentError(error: unknown): AppError {
       });
 }
 
-export function ImportWorkspace({ onAudioChange }: ImportWorkspaceProps) {
+export function ImportWorkspace({ onAudioChange, onContinue }: ImportWorkspaceProps) {
   const setCurrentJob = useAppStore((state) => state.setCurrentJob);
   const currentJob = useAppStore((state) => state.currentJob);
   const [audio, setAudio] = useState<AudioView | null>(null);
@@ -269,7 +270,13 @@ export function ImportWorkspace({ onAudioChange }: ImportWorkspaceProps) {
         </section>
       )}
 
-      <button type="button" disabled={!audio || (audio.risk === "high" && !highRiskAccepted)}>
+      <button
+        type="button"
+        disabled={!audio || (audio.risk === "high" && !highRiskAccepted)}
+        onClick={() => {
+          if (audioRef.current) onContinue(audioRef.current);
+        }}
+      >
         Continue to transcription
       </button>
 

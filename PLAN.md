@@ -18,7 +18,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 1 — Static application foundation and GitHub Pages
 - [x] Phase 2 — Audio and lyrics import
 - [x] Phase 3 — Canonical lyrics and alignment engine
-- [ ] Phase 4 — Local Whisper transcription
+- [x] Phase 4 — Local Whisper transcription
 - [ ] Phase 5 — Workflow integration and alignment review
 - [ ] Phase 6 — Timeline editor and project persistence
 - [ ] Phase 7 — Timed-text and project exports

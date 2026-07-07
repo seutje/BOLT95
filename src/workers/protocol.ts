@@ -1,4 +1,5 @@
 import type { SerializedAppError } from "../app/errors/AppError";
+import type { TranscriptionProgress, WhisperRawResult } from "../media/transcription/types";
 import type { WaveformData } from "../media/audio/types";
 
 export interface AudioProcessRequest {
@@ -39,6 +40,76 @@ export interface AudioFailureResponse {
 export type AudioWorkerRequest = AudioProcessRequest;
 export type AudioWorkerResponse =
   AudioProgressResponse | AudioCompleteResponse | AudioFailureResponse;
+
+export interface WhisperInitRequest {
+  readonly type: "whisper/init";
+  readonly requestId: string;
+  readonly wasmModuleUrl: string;
+  readonly wasmUrl: string;
+  readonly model: ArrayBuffer;
+}
+
+export interface WhisperRunRequest {
+  readonly type: "whisper/run";
+  readonly requestId: string;
+  readonly pcm: ArrayBuffer;
+  readonly language: string;
+}
+
+export interface WhisperCancelRequest {
+  readonly type: "whisper/cancel";
+  readonly requestId: string;
+}
+
+export interface WhisperDisposeRequest {
+  readonly type: "whisper/dispose";
+  readonly requestId: string;
+}
+
+export interface WhisperReadyResponse {
+  readonly type: "whisper/ready";
+  readonly requestId: string;
+  readonly wasmHeapBytes: number;
+}
+
+export interface WhisperProgressResponse {
+  readonly type: "whisper/progress";
+  readonly requestId: string;
+  readonly progress: TranscriptionProgress;
+}
+
+export interface WhisperResultResponse {
+  readonly type: "whisper/result";
+  readonly requestId: string;
+  readonly result: WhisperRawResult;
+}
+
+export interface WhisperCancelledResponse {
+  readonly type: "whisper/cancelled";
+  readonly requestId: string;
+}
+
+export interface WhisperDisposedResponse {
+  readonly type: "whisper/disposed";
+  readonly requestId: string;
+}
+
+export interface WhisperFailureResponse {
+  readonly type: "whisper/failure";
+  readonly requestId: string;
+  readonly error: SerializedAppError;
+}
+
+export type WhisperWorkerRequest =
+  WhisperInitRequest | WhisperRunRequest | WhisperCancelRequest | WhisperDisposeRequest;
+
+export type WhisperWorkerResponse =
+  | WhisperReadyResponse
+  | WhisperProgressResponse
+  | WhisperResultResponse
+  | WhisperCancelledResponse
+  | WhisperDisposedResponse
+  | WhisperFailureResponse;
 
 export function restoreWaveform(response: AudioCompleteResponse["waveform"]): WaveformData {
   return {
