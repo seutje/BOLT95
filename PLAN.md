@@ -20,7 +20,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 3 — Canonical lyrics and alignment engine
 - [x] Phase 4 — Local Whisper transcription
 - [x] Phase 5 — Workflow integration and alignment review
-- [ ] Phase 6 — Timeline editor and project persistence
+- [x] Phase 6 — Timeline editor and project persistence
 - [ ] Phase 7 — Timed-text and project exports
 - [ ] Phase 8 — Deterministic preview and visual styling
 - [ ] Phase 9 — Draft video export
@@ -352,17 +352,17 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Implement one authoritative playback clock with play/pause, seek, current time, and active-line highlighting.
-- [ ] Render compact waveform/timeline with zoom, keyboard alternatives, and text timing inputs.
-- [ ] Add selection, line text/start/end edits, nudges, split, merge, reviewed state, and explicit manual provenance.
-- [ ] Add set-start/set-end-at-playhead and shortcuts: Space, arrows, Shift+arrows, up/down, platform undo/redo.
-- [ ] Suppress global shortcuts while typing except appropriate editor conventions.
-- [ ] Enforce timing bounds/non-overlap with clear validation and retain instrumental gaps.
-- [ ] Implement bounded undo/redo using commands/patches, not whole PCM/project copies.
-- [ ] Define project schema v1, runtime validation, migrations, future-version rejection, and atomic IndexedDB writes.
-- [ ] Autosave edits off the playback-critical path and restore after reload.
-- [ ] Export/import project JSON without audio; relink by metadata/fingerprint and warn on mismatch.
-- [ ] Add project list/delete and clear-local-data controls with storage-eviction messaging.
+- [x] Implement one authoritative playback clock with play/pause, seek, current time, and active-line highlighting.
+- [x] Render compact waveform/timeline with zoom, keyboard alternatives, and text timing inputs.
+- [x] Add selection, line text/start/end edits, nudges, split, merge, reviewed state, and explicit manual provenance.
+- [x] Add set-start/set-end-at-playhead and shortcuts: Space, arrows, Shift+arrows, up/down, platform undo/redo.
+- [x] Suppress global shortcuts while typing except appropriate editor conventions.
+- [x] Enforce timing bounds/non-overlap with clear validation and retain instrumental gaps.
+- [x] Implement bounded undo/redo using commands/patches, not whole PCM/project copies.
+- [x] Define project schema v1, runtime validation, migrations, future-version rejection, and atomic IndexedDB writes.
+- [x] Autosave edits off the playback-critical path and restore after reload.
+- [x] Export/import project JSON without audio; relink by metadata/fingerprint and warn on mismatch.
+- [x] Add project list/delete and clear-local-data controls with storage-eviction messaging.
 
 **Tests added:** Editor command/invariant tests; migration and malformed/future JSON tests; IndexedDB save/reload tests; Playwright keyboard editing, undo/redo, reload restore, relink match/mismatch, and local-data deletion.
 
@@ -370,10 +370,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] Every required line-level edit works by keyboard and undo/redo restores exact prior state.
-- [ ] Playback remains usable during autosave and active-line changes at the expected time.
-- [ ] Reload restores the last autosave; missing audio can be relinked with fingerprint verification.
-- [ ] Malformed/future project files cannot mutate stored state and show a recovery message.
+- [x] Every required line-level edit works by keyboard and undo/redo restores exact prior state.
+- [x] Playback remains usable during autosave and active-line changes at the expected time.
+- [x] Reload restores the last autosave; missing audio can be relinked with fingerprint verification.
+- [x] Malformed/future project files cannot mutate stored state and show a recovery message.
 
 **Demo procedure:** Edit the deterministic project entirely by keyboard, set timing during playback, undo/redo, reload, resume, export/import JSON, relink matching then mismatching audio, and clear local data.
 

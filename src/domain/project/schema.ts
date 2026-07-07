@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   alignedLineSchema,
   alignedWordSchema,
+  alignmentResultSchema,
   manualLineTimingSchema,
   transcriptResultSchema,
 } from "../alignment/engine";
@@ -51,5 +52,56 @@ export const alignmentProjectSchema = z.object({
   manualLineTimings: z.array(manualLineTimingSchema),
 });
 
+export const projectAudioLinkSchema = z.object({
+  durationMs: z.number().int().positive(),
+  fingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
+  fileName: z.string().min(1),
+  fileSize: z.number().int().positive(),
+  format: z.literal("MP3"),
+});
+
+export const editorLineSchema = z
+  .object({
+    id: z.string(),
+    text: z.string(),
+    startMs: z.number().int().nonnegative(),
+    endMs: z.number().int().nonnegative(),
+    provenance: z.enum([
+      "transcript-exact",
+      "transcript-fuzzy",
+      "interpolated",
+      "extrapolated",
+      "lrc",
+      "manual",
+    ]),
+    reviewState: z.enum(["accepted", "needs-review", "ambiguous", "unresolved"]),
+  })
+  .refine((line) => line.endMs >= line.startMs, {
+    message: "Line end must be greater than or equal to start.",
+    path: ["endMs"],
+  });
+
+export const editorProjectSchemaV1 = z.object({
+  schemaVersion: z.literal(1),
+  id: z.string(),
+  title: z.string(),
+  createdAt: z.number().int().nonnegative(),
+  updatedAt: z.number().int().nonnegative(),
+  audio: projectAudioLinkSchema,
+  alignment: alignmentResultSchema,
+  lines: z.array(editorLineSchema),
+});
+
+export const projectFileSchemaV1 = z.object({
+  schemaVersion: z.literal(1),
+  exportedAt: z.number().int().nonnegative(),
+  appVersion: z.string(),
+  project: editorProjectSchemaV1,
+});
+
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 export type AlignmentProject = z.infer<typeof alignmentProjectSchema>;
+export type ProjectAudioLink = z.infer<typeof projectAudioLinkSchema>;
+export type EditorLine = z.infer<typeof editorLineSchema>;
+export type EditorProject = z.infer<typeof editorProjectSchemaV1>;
+export type ProjectFileV1 = z.infer<typeof projectFileSchemaV1>;

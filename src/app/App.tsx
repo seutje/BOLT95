@@ -6,13 +6,16 @@ import { ModalDialog } from "../components/common/ModalDialog";
 import { StageNavigation } from "../components/common/StageNavigation";
 import { ImportWorkspace } from "../components/import/ImportWorkspace";
 import { AlignmentReviewWorkspace } from "../components/review/AlignmentReviewWorkspace";
+import { TimelineEditorWorkspace } from "../components/timeline/TimelineEditorWorkspace";
 import { TranscriptWorkspace } from "../components/transcript/TranscriptWorkspace";
 import { availableWorkflowStages, canEnterWorkflowStage } from "./commands/workflow";
+import type { EditorProject } from "../domain/project/schema";
 import {
   probeRuntimeCapabilities,
   type RuntimeCapabilities,
 } from "../infrastructure/capabilities/runtime";
 import { createSafeDiagnostics } from "../infrastructure/diagnostics/diagnostics";
+import { listProjects } from "../infrastructure/storage/projects";
 import type { AudioImportResult } from "../media/audio/types";
 
 let capabilityProbe: Promise<RuntimeCapabilities> | undefined;
@@ -42,6 +45,8 @@ export function App() {
     risk: "low" | "moderate" | "high";
   } | null>(null);
   const [audioImport, setAudioImport] = useState<AudioImportResult | null>(null);
+  const [restoredProject, setRestoredProject] = useState<EditorProject | null>(null);
+  const [savedProjects, setSavedProjects] = useState<readonly EditorProject[]>([]);
   const workflowSnapshot = {
     hasAudio: audioImport !== null,
     hasTranscript: transcript !== null,
@@ -60,6 +65,12 @@ export function App() {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    void listProjects()
+      .then(setSavedProjects)
+      .catch(() => setSavedProjects([]));
   }, []);
 
   const diagnostics = capabilities
@@ -101,7 +112,7 @@ export function App() {
           }}
         />
 
-        <div className="workspace">
+        <div className={activeStage === "edit" ? "workspace workspace-full" : "workspace"}>
           {activeStage === "transcribe" ? (
             <TranscriptWorkspace
               audio={audioImport}
@@ -118,12 +129,19 @@ export function App() {
               alignment={alignment}
               onAlignmentReady={setAlignment}
             />
+          ) : activeStage === "edit" ? (
+            <TimelineEditorWorkspace
+              audio={audioImport}
+              alignment={alignment}
+              restoredProject={restoredProject}
+            />
           ) : (
             <ImportWorkspace
               onAudioChange={(summary) => {
                 setAudioSummary(summary);
                 if (!summary) {
                   setAudioImport(null);
+                  setRestoredProject(null);
                   setSuppliedLyrics(null);
                   setTranscript(null);
                   setAlignment(null);
@@ -131,6 +149,7 @@ export function App() {
               }}
               onContinue={(audio, lyrics) => {
                 setAudioImport(audio);
+                setRestoredProject(null);
                 setSuppliedLyrics(lyrics);
                 setTranscript(null);
                 setAlignment(null);
@@ -139,44 +158,70 @@ export function App() {
             />
           )}
 
-          <aside className="workspace-sidebar">
-            <CapabilitySummary
-              capabilities={capabilities}
-              onDetails={() => showDialog("capabilities")}
-            />
-            {capabilityFailure && (
-              <p className="error-panel" role="alert">
-                Capability checks failed. Reload the page or use a current desktop browser.
-              </p>
-            )}
-            <section className="group-box project-status" aria-labelledby="project-title">
-              <h2 id="project-title">Current project</h2>
-              <div className="empty-project" aria-hidden="true">
-                ♫
-              </div>
-              {audioSummary ? (
-                <>
-                  <p className="project-file-name">{audioSummary.name}</p>
-                  <p>
-                    {Math.round(audioSummary.durationMs / 1000)} seconds · {audioSummary.risk} risk
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>No project loaded.</p>
-                  <p>Select an MP3 to create an in-memory project input.</p>
-                </>
-              )}
-              {transcript && <p>{transcript.words.length} transcript words ready.</p>}
-              {alignment && (
-                <p>
-                  {alignment.lines.length} timed lines ·{" "}
-                  {alignment.lines.filter((line) => line.reviewState !== "accepted").length} need
-                  review
+          {activeStage !== "edit" && (
+            <aside className="workspace-sidebar">
+              <CapabilitySummary
+                capabilities={capabilities}
+                onDetails={() => showDialog("capabilities")}
+              />
+              {capabilityFailure && (
+                <p className="error-panel" role="alert">
+                  Capability checks failed. Reload the page or use a current desktop browser.
                 </p>
               )}
-            </section>
-          </aside>
+              <section className="group-box project-status" aria-labelledby="project-title">
+                <h2 id="project-title">Current project</h2>
+                <div className="empty-project" aria-hidden="true">
+                  ♫
+                </div>
+                {audioSummary ? (
+                  <>
+                    <p className="project-file-name">{audioSummary.name}</p>
+                    <p>
+                      {Math.round(audioSummary.durationMs / 1000)} seconds · {audioSummary.risk}{" "}
+                      risk
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>No project loaded.</p>
+                    <p>Select an MP3 to create an in-memory project input.</p>
+                  </>
+                )}
+                {transcript && <p>{transcript.words.length} transcript words ready.</p>}
+                {alignment && (
+                  <p>
+                    {alignment.lines.length} timed lines ·{" "}
+                    {alignment.lines.filter((line) => line.reviewState !== "accepted").length} need
+                    review
+                  </p>
+                )}
+                {!audioImport && savedProjects.length > 0 && (
+                  <div className="resume-projects">
+                    <p>Autosaves available:</p>
+                    {savedProjects.map((project) => (
+                      <button
+                        key={project.id}
+                        type="button"
+                        onClick={() => {
+                          setRestoredProject(project);
+                          setAlignment(project.alignment);
+                          setAudioSummary({
+                            name: project.audio.fileName,
+                            durationMs: project.audio.durationMs,
+                            risk: "low",
+                          });
+                          setActiveStage("edit");
+                        }}
+                      >
+                        Resume {project.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </aside>
+          )}
         </div>
 
         <footer className="status-bar">

@@ -15,7 +15,7 @@ describe("workflow commands", () => {
     ).toBe(false);
     expect(
       availableWorkflowStages({ hasAudio: true, hasTranscript: true, hasAlignment: true }),
-    ).toEqual(["import", "transcribe", "align", "review"]);
+    ).toEqual(["import", "transcribe", "align", "review", "edit"]);
   });
 
   it("advances only to the next completed boundary", () => {

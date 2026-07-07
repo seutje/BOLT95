@@ -20,7 +20,7 @@ export function availableWorkflowStages(snapshot: WorkflowSnapshot): readonly Wo
   const available: WorkflowStage[] = ["import"];
   if (snapshot.hasAudio) available.push("transcribe");
   if (snapshot.hasTranscript) available.push("align");
-  if (snapshot.hasAlignment) available.push("review");
+  if (snapshot.hasAlignment) available.push("review", "edit");
   return available;
 }
 

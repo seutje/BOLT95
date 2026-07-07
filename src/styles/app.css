@@ -214,6 +214,10 @@ button:disabled {
   border: 2px inset #fff;
 }
 
+.workspace-full {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .workspace-main,
 .workspace-sidebar {
   min-width: 0;
@@ -744,6 +748,92 @@ button:disabled {
 .transcript-result li small {
   margin-top: 0.15rem;
   color: #444;
+}
+
+.timeline-editor {
+  display: grid;
+  gap: 1rem;
+}
+
+.timeline-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.55rem;
+}
+
+.timeline-toolbar label {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 9rem;
+}
+
+.timeline-toolbar input[type="number"] {
+  width: 8rem;
+}
+
+.timeline-canvas {
+  display: block;
+  width: 100%;
+  height: 9rem;
+  margin-top: 0.75rem;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
+.timeline-table-wrap {
+  max-height: 28rem;
+  overflow: auto;
+  border: 2px inset #fff;
+}
+
+.timeline-table textarea {
+  width: min(28rem, 100%);
+  min-width: 12rem;
+  resize: vertical;
+}
+
+.timeline-table input[type="number"] {
+  width: 7rem;
+}
+
+.timeline-selected {
+  outline: 3px solid #000080;
+  outline-offset: -3px;
+}
+
+.line-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 18rem;
+}
+
+.line-actions button {
+  min-height: 1.9rem;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.82rem;
+}
+
+.saved-projects {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0.75rem 0 0;
+  list-style: none;
+}
+
+.saved-projects li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.resume-projects {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
 }
 
 @media (max-width: 54rem) {

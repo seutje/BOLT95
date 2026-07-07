@@ -46,11 +46,12 @@ export function ImportWorkspace({ onAudioChange, onContinue }: ImportWorkspacePr
   const [processing, setProcessing] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
   const audioRef = useRef<AudioImportResult | null>(null);
+  const audioHandedOffRef = useRef(false);
 
   useEffect(
     () => () => {
       controllerRef.current?.abort();
-      if (audioRef.current) releaseAudioImport(audioRef.current);
+      if (audioRef.current && !audioHandedOffRef.current) releaseAudioImport(audioRef.current);
     },
     [],
   );
@@ -69,6 +70,7 @@ export function ImportWorkspace({ onAudioChange, onContinue }: ImportWorkspacePr
         onProgress: setCurrentJob,
       });
       if (audioRef.current) releaseAudioImport(audioRef.current);
+      audioHandedOffRef.current = false;
       audioRef.current = result;
       const importedFile = result.file;
       setAudio({
@@ -276,6 +278,7 @@ export function ImportWorkspace({ onAudioChange, onContinue }: ImportWorkspacePr
         disabled={!audio || (audio.risk === "high" && !highRiskAccepted)}
         onClick={() => {
           if (audioRef.current) {
+            audioHandedOffRef.current = true;
             onContinue(audioRef.current, lyricsText ? createCanonicalLyrics(lyrics) : null);
           }
         }}
