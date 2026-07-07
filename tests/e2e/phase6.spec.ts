@@ -26,6 +26,7 @@ test("timeline edits are undoable, autosaved, restorable, and relinkable", async
     pageErrors.filter((message) => /NotSupportedError|supported sources/u.test(message)),
   ).toEqual([]);
   await expect(page.getByText(/Playback failed/u)).toHaveCount(0);
+  await page.getByRole("button", { name: "Pause" }).click();
 
   const firstLine = page.locator(".timeline-table textarea").first();
   await firstLine.fill("Corrected first line");
@@ -35,11 +36,30 @@ test("timeline edits are undoable, autosaved, restorable, and relinkable", async
   await page.getByRole("button", { name: "Redo" }).click();
   await expect(firstLine).toHaveValue("Corrected first line");
 
-  await page.getByLabel(/Start time Café/u).fill("0.500");
+  await page.getByLabel("Scrub timeline").evaluate((element) => {
+    const input = element as HTMLInputElement;
+    input.value = String(Math.min(400, Number(input.max)));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(page.getByLabel("Current time")).toHaveValue("0.400");
+  await page.getByRole("button", { name: "Set start" }).first().click();
+  await expect(page.getByLabel("Start time Corrected first line")).toHaveValue("0.400");
+
+  await page.getByLabel("Scrub timeline").evaluate((element) => {
+    const input = element as HTMLInputElement;
+    input.value = String(Math.min(500, Number(input.max)));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  await expect(page.getByLabel("Current time")).toHaveValue("0.500");
+  await page.getByRole("button", { name: "Set end" }).first().click();
+  await expect(page.getByLabel("End time Corrected first line")).toHaveValue("0.500");
+
+  await page.getByLabel(/Start time Café/u).fill("0.450");
   await expect(page.getByText(/overlap/u)).toBeVisible();
   await page.getByLabel(/Start time Café/u).fill("1.200");
   await page.getByRole("button", { name: "Reviewed" }).first().click();
   await expect(page.getByText("Autosaved locally.")).toBeVisible();
+  await page.waitForTimeout(500);
 
   await page.reload();
   await page.getByRole("button", { name: /Resume short-valid/u }).click();

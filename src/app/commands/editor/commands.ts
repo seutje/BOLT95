@@ -66,16 +66,39 @@ function findIndex(project: EditorProject, lineId: string): number {
   return project.lines.findIndex((line) => line.id === lineId);
 }
 
-function timingError(lines: readonly EditorLine[], durationMs: number): string | null {
-  for (const [index, line] of lines.entries()) {
-    if (line.startMs < 0 || line.endMs > durationMs)
-      return "Timing must stay within the audio duration.";
-    if (line.endMs < line.startMs) return "Line end must not be before line start.";
-    const previous = lines[index - 1];
-    if (previous && line.startMs < previous.endMs)
-      return "Line timing cannot overlap the previous line.";
-    const next = lines[index + 1];
-    if (next && line.endMs > next.startMs) return "Line timing cannot overlap the next line.";
+function timingErrorAt(
+  lines: readonly EditorLine[],
+  durationMs: number,
+  index: number,
+): string | null {
+  const line = lines[index];
+  if (!line) return null;
+  if (line.startMs < 0 || line.endMs > durationMs)
+    return "Timing must stay within the audio duration.";
+  if (line.endMs < line.startMs) return "Line end must not be before line start.";
+  const previous = lines[index - 1];
+  if (previous && line.startMs < previous.endMs)
+    return "Line timing cannot overlap the previous line.";
+  const next = lines[index + 1];
+  if (next && line.endMs > next.startMs) return "Line timing cannot overlap the next line.";
+  return null;
+}
+
+function timingError(
+  lines: readonly EditorLine[],
+  durationMs: number,
+  changedIndexes?: readonly number[],
+): string | null {
+  if (changedIndexes) {
+    for (const index of changedIndexes) {
+      const error = timingErrorAt(lines, durationMs, index);
+      if (error) return error;
+    }
+    return null;
+  }
+  for (const index of lines.keys()) {
+    const error = timingErrorAt(lines, durationMs, index);
+    if (error) return error;
   }
   return null;
 }
@@ -115,9 +138,10 @@ function editLines(
   session: EditorSession,
   mutate: (lines: EditorLine[]) => EditorLine[],
   selectedLineId = session.selectedLineId,
+  changedIndexes?: readonly number[],
 ): EditorSession {
   const lines = mutate([...session.project.lines]);
-  const error = timingError(lines, session.project.audio.durationMs);
+  const error = timingError(lines, session.project.audio.durationMs, changedIndexes);
   if (error) return { ...session, error };
   return pushHistory(session, withUpdated(session.project, lines), selectedLineId);
 }
@@ -136,6 +160,7 @@ function updateLine(
       return lines;
     },
     lineId,
+    [index],
   );
 }
 

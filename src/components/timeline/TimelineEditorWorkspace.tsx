@@ -39,6 +39,23 @@ function secondsToMs(value: string): number {
   return Math.round(Number(value) * 1000);
 }
 
+function clampMs(value: number, durationMs: number): number {
+  return Math.max(0, Math.min(durationMs, Math.round(value)));
+}
+
+function visibleTimelineRange(
+  project: EditorProject,
+  currentTimeMs: number,
+  zoom: number,
+): { readonly start: number; readonly end: number } {
+  const visibleDuration = project.audio.durationMs / zoom;
+  const start = Math.max(0, currentTimeMs - visibleDuration / 2);
+  return {
+    start,
+    end: Math.min(project.audio.durationMs, start + visibleDuration),
+  };
+}
+
 function drawTimeline(
   canvas: HTMLCanvasElement,
   project: EditorProject,
@@ -59,9 +76,7 @@ function drawTimeline(
   context.strokeStyle = "#808080";
   context.strokeRect(0.5, 0.5, rect.width - 1, rect.height - 1);
 
-  const visibleDuration = project.audio.durationMs / zoom;
-  const start = Math.max(0, currentTimeMs - visibleDuration / 2);
-  const end = Math.min(project.audio.durationMs, start + visibleDuration);
+  const { start, end } = visibleTimelineRange(project, currentTimeMs, zoom);
   const toX = (ms: number) => ((ms - start) / (end - start || 1)) * rect.width;
   const mid = rect.height * 0.45;
   context.strokeStyle = "#000080";
@@ -171,6 +186,21 @@ export function TimelineEditorWorkspace({
 
   function run(command: Parameters<typeof applyEditorCommand>[1]): void {
     setSession((current) => (current ? applyEditorCommand(current, command) : current));
+  }
+
+  function seekTo(ms: number): void {
+    if (!project) return;
+    const nextMs = clampMs(ms, project.audio.durationMs);
+    clockRef.current?.seek(nextMs);
+    setCurrentTimeMs(nextMs);
+  }
+
+  function seekCanvas(event: React.PointerEvent<HTMLCanvasElement>): void {
+    if (!project || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+    const { start, end } = visibleTimelineRange(project, currentTimeMs, zoom);
+    seekTo(start + (x / (rect.width || 1)) * (end - start));
   }
 
   async function togglePlayback(): Promise<void> {
@@ -317,7 +347,22 @@ export function TimelineEditorWorkspace({
               step="0.001"
               value={msToSeconds(currentTimeMs)}
               disabled={!audio}
-              onChange={(event) => clockRef.current?.seek(secondsToMs(event.currentTarget.value))}
+              onInput={(event) => seekTo(secondsToMs(event.currentTarget.value))}
+              onChange={(event) => seekTo(secondsToMs(event.currentTarget.value))}
+            />
+          </label>
+          <label>
+            Scrub timeline
+            <input
+              aria-label="Scrub timeline"
+              type="range"
+              min="0"
+              max={session.project.audio.durationMs}
+              step="10"
+              value={currentTimeMs}
+              disabled={!audio}
+              onInput={(event) => seekTo(Number(event.currentTarget.value))}
+              onChange={(event) => seekTo(Number(event.currentTarget.value))}
             />
           </label>
           <label>
@@ -347,7 +392,38 @@ export function TimelineEditorWorkspace({
           </button>
         </div>
         {audio ? (
-          <canvas ref={canvasRef} className="timeline-canvas" aria-label="Waveform timeline" />
+          <canvas
+            ref={canvasRef}
+            className="timeline-canvas"
+            aria-label="Waveform timeline"
+            role="slider"
+            aria-valuemin={0}
+            aria-valuemax={session.project.audio.durationMs}
+            aria-valuenow={currentTimeMs}
+            tabIndex={0}
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              seekCanvas(event);
+            }}
+            onPointerMove={(event) => {
+              if (event.buttons === 1) seekCanvas(event);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                seekTo(currentTimeMs - (event.shiftKey ? 1000 : 100));
+              } else if (event.key === "ArrowRight") {
+                event.preventDefault();
+                seekTo(currentTimeMs + (event.shiftKey ? 1000 : 100));
+              } else if (event.key === "Home") {
+                event.preventDefault();
+                seekTo(0);
+              } else if (event.key === "End") {
+                event.preventDefault();
+                seekTo(session.project.audio.durationMs);
+              }
+            }}
+          />
         ) : (
           <p className="import-warning">
             Audio bytes are not stored in autosaves or project JSON. Relink the MP3 to verify its

@@ -102,6 +102,48 @@ describe("editor commands", () => {
     expect(accepted.project.lines[1]?.startMs).toBe(2_500);
   });
 
+  it("allows shortening one line when another pair already overlaps", () => {
+    const dirtyProject: EditorProject = {
+      ...project(),
+      lines: [
+        {
+          id: "line-1",
+          text: "First line",
+          startMs: 1_000,
+          endMs: 2_000,
+          provenance: "transcript-exact",
+          reviewState: "accepted",
+        },
+        {
+          id: "line-2",
+          text: "Second line",
+          startMs: 3_000,
+          endMs: 4_000,
+          provenance: "interpolated",
+          reviewState: "needs-review",
+        },
+        {
+          id: "line-3",
+          text: "Third line",
+          startMs: 3_500,
+          endMs: 5_000,
+          provenance: "interpolated",
+          reviewState: "needs-review",
+        },
+      ],
+    };
+
+    const edited = applyEditorCommand(createEditorSession(dirtyProject), {
+      type: "set-boundary-at-playhead",
+      lineId: "line-1",
+      field: "endMs",
+      playheadMs: 1_500,
+    });
+
+    expect(edited.error).toBeNull();
+    expect(edited.project.lines[0]?.endMs).toBe(1_500);
+  });
+
   it("splits and merges without losing timing bounds", () => {
     const split = applyEditorCommand(createEditorSession(project()), {
       type: "split",
