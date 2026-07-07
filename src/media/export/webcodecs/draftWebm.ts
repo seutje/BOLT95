@@ -14,10 +14,12 @@ import type { AudioImportResult } from "../../audio/types";
 import {
   DRAFT_EXPORT_AUDIO_BITRATE,
   DRAFT_EXPORT_AUDIO_SAMPLE_RATE,
-  DRAFT_EXPORT_FRAME_RATE,
   DRAFT_EXPORT_VIDEO_BITRATE,
-  draftDurationMs,
-  draftPresetForProject,
+  FULL_EXPORT_AUDIO_BITRATE,
+  FULL_EXPORT_VIDEO_BITRATE,
+  LONG_EXPORT_SYNC_TOLERANCE_MS,
+  exportDurationMs,
+  videoPresetForProject,
   type DraftExportProgress,
   type DraftExportResult,
   type DraftVideoBackend,
@@ -32,10 +34,8 @@ export interface ExportDraftWebmOptions {
   readonly onProgress?: (progress: DraftExportProgress) => void;
 }
 
-const frameDurationSeconds = 1 / DRAFT_EXPORT_FRAME_RATE;
-
 function throwIfAborted(signal: AbortSignal): void {
-  if (signal.aborted) throw new DOMException("Draft video export was cancelled.", "AbortError");
+  if (signal.aborted) throw new DOMException("Video export was cancelled.", "AbortError");
 }
 
 function nextFrame(): Promise<void> {
@@ -59,8 +59,8 @@ function titleBase(project: EditorProject): string {
   return project.audio.fileName.replace(/\.[^.]+$/u, "") || "bolt95-draft";
 }
 
-function makeFileName(project: EditorProject, presetId: RenderPreset): string {
-  return `${titleBase(project)}.${presetId}.draft.webm`;
+function makeFileName(project: EditorProject, presetId: RenderPreset, draft: boolean): string {
+  return `${titleBase(project)}.${presetId}${draft ? ".draft" : ""}.webm`;
 }
 
 function createDraftAudioBuffer(audio: AudioImportResult, durationMs: number): AudioBuffer {
@@ -114,13 +114,14 @@ async function waitForVideoMetadata(url: string): Promise<number> {
 export async function verifyDraftVideoBlob(
   blob: Blob,
   expectedDurationMs: number,
+  toleranceMs = 100,
 ): Promise<number> {
   const url = URL.createObjectURL(blob);
   try {
     const durationMs = await waitForVideoMetadata(url);
     const driftMs = Math.abs(durationMs - expectedDurationMs);
-    if (!Number.isFinite(durationMs) || driftMs > 100) {
-      throw new Error(`Draft WebM duration drift is ${Math.round(driftMs)} ms.`);
+    if (!Number.isFinite(durationMs) || driftMs > toleranceMs) {
+      throw new Error(`WebM duration drift is ${Math.round(driftMs)} ms.`);
     }
     return durationMs;
   } finally {
@@ -137,13 +138,16 @@ export async function exportDraftWebm({
   onProgress = () => undefined,
 }: ExportDraftWebmOptions): Promise<DraftExportResult> {
   if (!backend.supported) throw new Error(backend.detail);
-  const durationMs = draftDurationMs(project, audio);
-  const basePreset = draftPresetForProject(project, presetId);
+  if (backend.id !== "webcodecs-webm") throw new Error("WebCodecs WebM backend is required.");
+  const basePreset = videoPresetForProject(project, presetId);
   const preset = {
     ...basePreset,
-    durationMs,
-    frameCount: Math.ceil((durationMs / 1_000) * DRAFT_EXPORT_FRAME_RATE),
+    durationMs: exportDurationMs(project, audio, basePreset),
+    frameCount: 0,
   };
+  const durationMs = preset.durationMs;
+  const frameDurationSeconds = 1 / preset.frameRate;
+  preset.frameCount = Math.ceil((durationMs / 1_000) * preset.frameRate);
   const theme = {
     ...withDefaultVisualTheme(project.visual),
     preset: preset.id,
@@ -167,7 +171,7 @@ export async function exportDraftWebm({
     onProgress({ phase: "preparing", progress: 0, message: "Preparing WebM encoders." });
     const videoSource = new CanvasSource(canvas, {
       codec: backend.videoCodec,
-      bitrate: DRAFT_EXPORT_VIDEO_BITRATE,
+      bitrate: preset.mode === "full" ? FULL_EXPORT_VIDEO_BITRATE : DRAFT_EXPORT_VIDEO_BITRATE,
       keyFrameInterval: 1,
       onEncodedPacket: () => {
         encodedPackets += 1;
@@ -175,7 +179,7 @@ export async function exportDraftWebm({
     });
     const audioSource = new AudioBufferSource({
       codec: backend.audioCodec,
-      bitrate: DRAFT_EXPORT_AUDIO_BITRATE,
+      bitrate: preset.mode === "full" ? FULL_EXPORT_AUDIO_BITRATE : DRAFT_EXPORT_AUDIO_BITRATE,
     });
     output.addVideoTrack(videoSource);
     output.addAudioTrack(audioSource);
@@ -191,7 +195,7 @@ export async function exportDraftWebm({
       const timeMs = Math.min(durationMs - 1, Math.round(frame * frameDurationSeconds * 1_000));
       renderFrame(context, { theme, lyrics: lyricsForFrame(project, timeMs), reducedMotion: true });
       await videoSource.add(frame * frameDurationSeconds, frameDurationSeconds, {
-        keyFrame: frame % DRAFT_EXPORT_FRAME_RATE === 0,
+        keyFrame: frame % preset.frameRate === 0,
       });
       if (frame % 5 === 0) await nextFrame();
       onProgress({
@@ -211,11 +215,15 @@ export async function exportDraftWebm({
 
     throwIfAborted(signal);
     onProgress({ phase: "verifying", progress: 0.95, message: "Verifying browser playback." });
-    const verifiedDurationMs = await verifyDraftVideoBlob(blob, durationMs);
-    onProgress({ phase: "completed", progress: 1, message: "Draft WebM ready." });
+    const verifiedDurationMs = await verifyDraftVideoBlob(
+      blob,
+      durationMs,
+      preset.mode === "full" ? LONG_EXPORT_SYNC_TOLERANCE_MS : 100,
+    );
+    onProgress({ phase: "completed", progress: 1, message: "WebM ready." });
     return {
       blob,
-      fileName: makeFileName(project, preset.id),
+      fileName: makeFileName(project, preset.id, preset.mode === "draft"),
       mimeType,
       preset,
       backend,

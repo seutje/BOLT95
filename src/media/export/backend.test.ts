@@ -7,6 +7,8 @@ import {
   draftExportPresets,
   draftPresetForProject,
   estimateDraftExportRisk,
+  fullExportPresets,
+  probeMediaRecorderBackend,
   probeDraftVideoBackend,
 } from "./backend";
 
@@ -135,7 +137,49 @@ describe("draft video backend", () => {
   it("reports risk from support, duration, and memory facts", () => {
     const risk = estimateDraftExportRisk(draftExportPresets[2]!, audio(), null, 2);
     expect(risk.level).toBe("high");
-    expect(risk.reasons.join(" ")).toContain("No verified WebCodecs");
+    expect(risk.blockers.join(" ")).toContain("supported video backend");
     expect(risk.reasons.join(" ")).toContain("5 seconds");
+  });
+
+  it("qualifies full presets with benchmark duration and memory gates", () => {
+    const backend = {
+      id: "webcodecs-webm" as const,
+      label: "WebM",
+      container: "webm" as const,
+      videoCodec: "vp9" as const,
+      audioCodec: "opus" as const,
+      mimeType: "video/webm",
+      supported: true,
+      detail: "ok",
+      deterministic: true,
+    };
+    const square = fullExportPresets.find((preset) => preset.id === "square-full")!;
+    const qualified = estimateDraftExportRisk(square, audio(20_000), backend, 8);
+    expect(qualified.qualified).toBe(true);
+    expect(qualified.reasons.join(" ")).toContain("complete project duration");
+
+    const blocked = estimateDraftExportRisk(square, audio(20_000), backend, 2);
+    expect(blocked.qualified).toBe(false);
+    expect(blocked.blockers.join(" ")).toContain("Device memory");
+  });
+
+  it("probes the MediaRecorder fallback by supported MIME type", () => {
+    class FakeCanvas {
+      captureStream() {
+        return {};
+      }
+    }
+    class FakeMediaRecorder {
+      static isTypeSupported(type: string) {
+        return type === "video/webm;codecs=vp8";
+      }
+    }
+    vi.stubGlobal("HTMLCanvasElement", FakeCanvas);
+    vi.stubGlobal("MediaRecorder", FakeMediaRecorder);
+    const backend = probeMediaRecorderBackend();
+    expect(backend.supported).toBe(true);
+    expect(backend.id).toBe("mediarecorder-webm");
+    expect(backend.mimeType).toBe("video/webm;codecs=vp8");
+    expect(backend.deterministic).toBe(false);
   });
 });

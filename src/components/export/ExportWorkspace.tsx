@@ -9,15 +9,19 @@ import type { RenderPreset } from "../../domain/rendering/schema";
 import { downloadBlob, downloadText } from "../../infrastructure/downloads/blobDownload";
 import type { AudioImportResult } from "../../media/audio/types";
 import {
-  draftDurationMs,
-  draftExportPresets,
   draftPresetForProject,
+  exportDurationMs,
   estimateDraftExportRisk,
+  fullExportPresets,
+  probeMediaRecorderBackend,
   probeDraftVideoBackend,
+  videoExportPresets,
+  videoPresetForProject,
   type DraftExportProgress,
   type DraftExportResult,
   type DraftVideoBackend,
 } from "../../media/export/backend";
+import { exportMediaRecorderWebm } from "../../media/export/mediarecorder/canvasWebm";
 import { exportDraftWebm } from "../../media/export/webcodecs/draftWebm";
 
 interface ExportWorkspaceProps {
@@ -74,7 +78,8 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   );
   const [status, setStatus] = useState("Choose a format to preview and download.");
   const [videoStatus, setVideoStatus] = useState("Checking draft video support.");
-  const [backend, setBackend] = useState<DraftVideoBackend | null>(null);
+  const [backends, setBackends] = useState<readonly DraftVideoBackend[]>([]);
+  const [backendId, setBackendId] = useState<DraftVideoBackend["id"]>("webcodecs-webm");
   const [videoResult, setVideoResult] = useState<DraftExportResult | null>(null);
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -86,25 +91,59 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
       : serializeCaptionExport(project, format);
   }, [format, project]);
   const selectedPreset = useMemo(
-    () => (project ? draftPresetForProject(project, presetId) : draftExportPresets[2]!),
+    () => (project ? videoPresetForProject(project, presetId) : videoExportPresets[2]!),
     [presetId, project],
+  );
+  const backend = useMemo(
+    () =>
+      backends.find((candidate) => candidate.id === backendId) ??
+      backends.find((candidate) => candidate.supported) ??
+      null,
+    [backendId, backends],
   );
   const risk = useMemo(
     () => (audio ? estimateDraftExportRisk(selectedPreset, audio, backend) : null),
     [audio, backend, selectedPreset],
   );
+  const qualifiedFullPresets = useMemo(
+    () =>
+      audio
+        ? fullExportPresets.filter(
+            (preset) => estimateDraftExportRisk(preset, audio, backend).qualified,
+          )
+        : [],
+    [audio, backend],
+  );
+  const displayedPresets = useMemo(
+    () => [
+      ...videoExportPresets.filter((preset) => preset.mode === "draft"),
+      ...qualifiedFullPresets,
+    ],
+    [qualifiedFullPresets],
+  );
 
   useEffect(() => {
     let cancelled = false;
-    void probeDraftVideoBackend(selectedPreset)
-      .then((result) => {
+    void Promise.all([
+      probeDraftVideoBackend(selectedPreset),
+      Promise.resolve(probeMediaRecorderBackend()),
+    ])
+      .then((results) => {
         if (cancelled) return;
-        setBackend(result);
-        setVideoStatus(result.supported ? `${result.label} is available.` : result.detail);
+        setBackends(results);
+        const preferred = results.find((candidate) => candidate.supported) ?? results[0]!;
+        setBackendId((current) =>
+          results.find((candidate) => candidate.id === current)?.supported ? current : preferred.id,
+        );
+        setVideoStatus(
+          preferred.supported
+            ? `${preferred.label} is available.`
+            : results.map((candidate) => candidate.detail).join(" "),
+        );
       })
       .catch((error: unknown) => {
         if (cancelled) return;
-        setBackend(null);
+        setBackends([]);
         setVideoStatus(error instanceof Error ? error.message : "Draft video probe failed.");
       });
     return () => {
@@ -142,7 +181,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   }
 
   async function startVideoExport(): Promise<void> {
-    if (!project || !audio || !backend?.supported) return;
+    if (!project || !audio || !backend?.supported || !risk?.qualified) return;
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
@@ -152,24 +191,35 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
     setVideoResult(null);
     setVideoStatus("Preparing draft video export.");
     try {
-      const result = await exportDraftWebm({
-        project,
-        audio,
-        backend,
-        presetId,
-        signal: controller.signal,
-        onProgress: (update) => {
-          setProgress(update.progress);
-          setVideoStatus(update.message);
-          setCurrentJob({
-            id: jobId,
-            type: "encode",
-            phase: jobPhaseForProgress(update.phase),
-            progress: update.progress,
-            message: update.message,
-          });
-        },
-      });
+      const progressHandler = (update: DraftExportProgress) => {
+        setProgress(update.progress);
+        setVideoStatus(update.message);
+        setCurrentJob({
+          id: jobId,
+          type: "encode",
+          phase: jobPhaseForProgress(update.phase),
+          progress: update.progress,
+          message: update.message,
+        });
+      };
+      const result =
+        backend.id === "mediarecorder-webm"
+          ? await exportMediaRecorderWebm({
+              project,
+              audio,
+              backend,
+              presetId,
+              signal: controller.signal,
+              onProgress: progressHandler,
+            })
+          : await exportDraftWebm({
+              project,
+              audio,
+              backend,
+              presetId,
+              signal: controller.signal,
+              onProgress: progressHandler,
+            });
       setVideoResult(result);
       setCurrentJob({
         id: jobId,
@@ -209,30 +259,56 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         <p className="eyebrow">EXPORT</p>
         <h2 id="export-title">Timed-text export</h2>
         <p>
-          Subtitle export remains available without video APIs. Draft video uses a verified local
-          WebCodecs WebM path and is capped to a five-second preview window.
+          Subtitle export remains available without video APIs. Video export shows only qualified
+          local WebM choices and never lowers the selected quality silently.
         </p>
       </div>
 
       <section className="group-box import-group" aria-labelledby="video-export-title">
-        <h2 id="video-export-title">Draft video</h2>
-        <div className="export-format-list" role="radiogroup" aria-label="Draft video preset">
-          {draftExportPresets.map((option) => (
+        <h2 id="video-export-title">Video</h2>
+        <div className="export-format-list" role="radiogroup" aria-label="Video backend">
+          {backends.map((option) => (
             <label key={option.id}>
               <input
                 type="radio"
-                name="draft-video-preset"
+                name="video-backend"
+                value={option.id}
+                checked={backend?.id === option.id}
+                disabled={!option.supported || exporting}
+                onChange={() => setBackendId(option.id)}
+              />
+              <span>{option.label}</span>
+              <small>
+                {option.supported ? `${option.mimeType} · ${option.detail}` : option.detail}
+              </small>
+            </label>
+          ))}
+        </div>
+        <div className="export-format-list" role="radiogroup" aria-label="Video preset">
+          {displayedPresets.map((option) => (
+            <label key={option.id}>
+              <input
+                type="radio"
+                name="video-preset"
                 value={option.id}
                 checked={presetId === option.id}
+                disabled={exporting}
                 onChange={() => setPresetId(option.id)}
               />
               <span>{option.label}</span>
               <small>
                 {option.width}x{option.height}
+                {option.mode === "full" ? " · full duration" : ""}
               </small>
             </label>
           ))}
         </div>
+        {qualifiedFullPresets.length === 0 && backend?.supported && (
+          <p className="field-hint">
+            Full presets are hidden until this device, backend, and source fit the recorded Phase 10
+            limits.
+          </p>
+        )}
         <dl className="file-facts">
           <div>
             <dt>Backend</dt>
@@ -241,7 +317,9 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
           <div>
             <dt>Duration</dt>
             <dd>
-              {audio && project ? formatSeconds(draftDurationMs(project, audio)) : "Relink audio"}
+              {audio && project
+                ? formatSeconds(exportDurationMs(project, audio, selectedPreset))
+                : "Relink audio"}
             </dd>
           </div>
           <div>
@@ -256,6 +334,13 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         {risk && risk.reasons.length > 0 && (
           <ul className="alignment-issues export-warnings">
             {risk.reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        )}
+        {risk && risk.blockers.length > 0 && (
+          <ul className="alignment-issues export-warnings">
+            {risk.blockers.map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
           </ul>
@@ -277,15 +362,15 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         <div className="lyrics-actions">
           <button
             type="button"
-            disabled={!audio || !backend?.supported || exporting}
+            disabled={!audio || !backend?.supported || !risk?.qualified || exporting}
             onClick={() => {
               void startVideoExport();
             }}
           >
-            Export Draft WebM
+            Export {selectedPreset.mode === "draft" ? "Draft " : ""}WebM
           </button>
           <button type="button" disabled={!videoResult || exporting} onClick={downloadVideo}>
-            Download Draft WebM
+            Download {videoResult?.preset.mode === "draft" ? "Draft " : ""}WebM
           </button>
         </div>
         {videoResult && (

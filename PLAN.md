@@ -24,7 +24,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 7 — Timed-text and project exports
 - [x] Phase 8 — Deterministic preview and visual styling
 - [x] Phase 9 — Draft video export
-- [ ] Phase 10 — Full export, fallbacks, and cancellation
+- [x] Phase 10 — Full export, fallbacks, and cancellation
 - [ ] Phase 11 — Hardening, performance, PWA, and release
 
 ## Fixed implementation decisions
@@ -509,7 +509,7 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **User-visible outcome:** Users see only valid full/draft options for their device, can use MediaRecorder fallback where available, receive high-memory warnings, and can cancel any expensive operation.
 
-**Architecture changes:** Add full preset policies, MediaRecorder backend, optional codec/container variants, global job/resource lifecycle audits, and benchmark-driven limits.
+**Architecture changes:** Add full preset policies, MediaRecorder backend, optional codec/container variants, global job/resource lifecycle audits, and benchmark-driven risk gates.
 
 **Modules created or modified:** `src/media/export/mediarecorder/`, `src/media/export/webcodecs/`, `src/infrastructure/capabilities/`, all workers/job owners, export UI.
 
@@ -517,15 +517,15 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Benchmark square/portrait/landscape full presets and set recommended duration/resolution/device limits.
-- [ ] Add full-resolution choices behind capability and risk gates; never silently lower quality.
-- [ ] Add MediaRecorder canvas fallback with probed MIME types, deterministic start/stop handling, and documented preview-rate limitations.
-- [ ] Evaluate AVC/AAC MP4 only through configuration support plus actual encode/mux/decode tests; hide it otherwise.
-- [ ] Audit cancellation for model download/load, preprocessing, transcription, alignment, waveform, render, and encode.
-- [ ] Audit cleanup for object URLs, buffers, workers, WASM state, contexts, frames, canvases, encoders, and temporary storage.
-- [ ] Verify failure of one backend permits another backend or timed-text export without project loss.
-- [ ] Establish output sync tolerance for longer fixtures and fail validation rather than download corrupt output.
-- [ ] Decide with evidence whether FFmpeg is needed; if yes, create a separately checkable implementation phase/ADR before adding it.
+- [x] Benchmark square/portrait/landscape full presets and set recommended resolution/device limits without capping full-export duration.
+- [x] Add full-resolution choices behind capability and risk gates; never silently lower quality.
+- [x] Add MediaRecorder canvas fallback with probed MIME types, deterministic start/stop handling, and documented preview-rate limitations.
+- [x] Evaluate AVC/AAC MP4 only through configuration support plus actual encode/mux/decode tests; hide it otherwise.
+- [x] Audit cancellation for model download/load, preprocessing, transcription, alignment, waveform, render, and encode.
+- [x] Audit cleanup for object URLs, buffers, workers, WASM state, contexts, frames, canvases, encoders, and temporary storage.
+- [x] Verify failure of one backend permits another backend or timed-text export without project loss.
+- [x] Establish output sync tolerance for longer fixtures and fail validation rather than download corrupt output.
+- [x] Decide with evidence whether FFmpeg is needed; if yes, create a separately checkable implementation phase/ADR before adding it.
 
 **Tests added:** Capability matrices with mocked APIs; backend failover; full-preset bounded integration tests; long-fixture sync; cancellation/restart for every expensive job; repeated-export leak smoke test.
 
@@ -533,11 +533,11 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] All three full aspect ratios are offered only on benchmark-qualified configurations.
-- [ ] At least one production video path works in primary Chromium and one documented fallback behavior is verified.
-- [ ] Unsupported formats are hidden/disabled with a reason and never create a broken download.
-- [ ] All expensive jobs cancel to a valid state and can be restarted.
-- [ ] Repeated bounded exports show no unbounded resource growth in the recorded test.
+- [x] All three full aspect ratios are offered only on benchmark-qualified configurations.
+- [x] At least one production video path works in primary Chromium and one documented fallback behavior is verified.
+- [x] Unsupported formats are hidden/disabled with a reason and never create a broken download.
+- [x] All expensive jobs cancel to a valid state and can be restarted.
+- [x] Repeated bounded exports show no unbounded resource growth in the recorded test.
 
 **Demo procedure:** Exercise capability matrices, a full export, fallback selection, forced primary-backend failure, high-risk warning, and cancellation/restart while monitoring memory and downloaded playback.
 
