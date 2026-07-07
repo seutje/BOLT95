@@ -7,6 +7,7 @@ import { StageNavigation } from "../components/common/StageNavigation";
 import { ExportWorkspace } from "../components/export/ExportWorkspace";
 import { ImportWorkspace } from "../components/import/ImportWorkspace";
 import { AlignmentReviewWorkspace } from "../components/review/AlignmentReviewWorkspace";
+import { StyleWorkspace } from "../components/style/StyleWorkspace";
 import { TimelineEditorWorkspace } from "../components/timeline/TimelineEditorWorkspace";
 import { TranscriptWorkspace } from "../components/transcript/TranscriptWorkspace";
 import { availableWorkflowStages, canEnterWorkflowStage } from "./commands/workflow";
@@ -129,7 +130,7 @@ export function App() {
 
         <div
           className={
-            activeStage === "edit" || activeStage === "export"
+            activeStage === "edit" || activeStage === "style" || activeStage === "export"
               ? "workspace workspace-full"
               : "workspace"
           }
@@ -168,6 +169,12 @@ export function App() {
                   risk: audio.risk,
                 });
               }}
+            />
+          ) : activeStage === "style" ? (
+            <StyleWorkspace
+              audio={audioImport}
+              project={currentProject}
+              onProjectChange={handleProjectChange}
             />
           ) : activeStage === "export" ? (
             <ExportWorkspace project={currentProject} />

@@ -22,7 +22,7 @@ This plan turns [DESIGN.md](DESIGN.md) into incremental, testable work. Every ta
 - [x] Phase 5 — Workflow integration and alignment review
 - [x] Phase 6 — Timeline editor and project persistence
 - [x] Phase 7 — Timed-text and project exports
-- [ ] Phase 8 — Deterministic preview and visual styling
+- [x] Phase 8 — Deterministic preview and visual styling
 - [ ] Phase 9 — Draft video export
 - [ ] Phase 10 — Full export, fallbacks, and cancellation
 - [ ] Phase 11 — Hardening, performance, PWA, and release
@@ -434,14 +434,14 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Tasks:**
 
-- [ ] Define visual schema/defaults and all six design presets (three full and three draft).
-- [ ] Implement pure layout for safe areas, wrapping, long words, Unicode, current/adjacent lines, and high-contrast outline/shadow.
-- [ ] Implement a deterministic `FrameRenderer` independent of live DOM.
-- [ ] Share time-to-active-line/word logic with export and respect reduced motion.
-- [ ] Add background color/image, optional blur, font/size, colors, alignment, position, transition, and highlight controls.
-- [ ] Keep local image bytes out of ordinary project JSON; restore/relink safely and revoke URLs.
-- [ ] Add responsive preview scaling without changing logical output dimensions.
-- [ ] Add renderer version to project/build diagnostics.
+- [x] Define visual schema/defaults and all six design presets (three full and three draft).
+- [x] Implement pure layout for safe areas, wrapping, long words, Unicode, current/adjacent lines, and high-contrast outline/shadow.
+- [x] Implement a deterministic `FrameRenderer` independent of live DOM.
+- [x] Share time-to-active-line/word logic with export and respect reduced motion.
+- [x] Add background color/image, optional blur, font/size, colors, alignment, position, transition, and highlight controls.
+- [x] Keep local image bytes out of ordinary project JSON; restore/relink safely and revoke URLs.
+- [x] Add responsive preview scaling without changing logical output dimensions.
+- [x] Add renderer version to project/build diagnostics.
 
 **Tests added:** Layout unit tests; pixel/visual regression fixtures for every ratio, Unicode, long lines, current-word highlight, safe areas, and reduced motion; Playwright style interactions.
 
@@ -449,10 +449,10 @@ These are the starting decisions required by DESIGN.md section 26. A failed Phas
 
 **Exit criteria:**
 
-- [ ] All required presets render correct logical dimensions and safe-area bounds.
-- [ ] The same frame input produces the same layout in preview and headless export harness.
-- [ ] Long/Unicode lines remain visible and high-contrast mode meets the recorded contrast target.
-- [ ] Visual baselines pass in the pinned Chromium environment.
+- [x] All required presets render correct logical dimensions and safe-area bounds.
+- [x] The same frame input produces the same layout in preview and headless export harness.
+- [x] Long/Unicode lines remain visible and high-contrast mode meets the recorded contrast target.
+- [x] Visual baselines pass in the pinned Chromium environment.
 
 **Demo procedure:** Load the deterministic project, cycle ratios/themes at fixed timestamps, compare snapshots, resize the browser, toggle reduced motion/high contrast, and inspect background cleanup.
 

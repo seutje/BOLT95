@@ -16,6 +16,14 @@ describe("workflow commands", () => {
     expect(
       availableWorkflowStages({ hasAudio: true, hasTranscript: true, hasAlignment: true }),
     ).toEqual(["import", "transcribe", "align", "review", "edit"]);
+    expect(
+      availableWorkflowStages({
+        hasAudio: true,
+        hasTranscript: true,
+        hasAlignment: true,
+        hasEditorProject: true,
+      }),
+    ).toEqual(["import", "transcribe", "align", "review", "edit", "style", "export"]);
   });
 
   it("advances only to the next completed boundary", () => {
@@ -26,7 +34,20 @@ describe("workflow commands", () => {
       nextWorkflowStage("transcribe", { hasAudio: true, hasTranscript: true, hasAlignment: false }),
     ).toBe("align");
     expect(
-      nextWorkflowStage("align", { hasAudio: true, hasTranscript: true, hasAlignment: true }),
+      nextWorkflowStage("align", {
+        hasAudio: true,
+        hasTranscript: true,
+        hasAlignment: true,
+        hasEditorProject: true,
+      }),
     ).toBe("review");
+    expect(
+      nextWorkflowStage("edit", {
+        hasAudio: true,
+        hasTranscript: true,
+        hasAlignment: true,
+        hasEditorProject: true,
+      }),
+    ).toBe("style");
   });
 });

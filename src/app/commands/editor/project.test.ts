@@ -43,9 +43,40 @@ const project: EditorProject = {
 
 describe("project JSON", () => {
   it("round-trips versioned project JSON without audio bytes", () => {
-    const file = serializeProjectFile(project, { appVersion: "test" }, 10);
+    const file = serializeProjectFile(
+      {
+        ...project,
+        visual: {
+          schemaVersion: 1,
+          preset: "square-draft",
+          backgroundColor: "#101018",
+          textColor: "#ffffff",
+          adjacentTextColor: "#d8d8d8",
+          highlightColor: "#ffff66",
+          outlineColor: "#000000",
+          fontFamily: "system",
+          fontScale: 1,
+          verticalPosition: 0.58,
+          textAlign: "center",
+          showAdjacentLines: true,
+          showWordHighlight: true,
+          highContrast: true,
+          transition: "fade",
+          backgroundBlur: 8,
+          backgroundImage: {
+            fileName: "local.png",
+            fileSize: 100,
+            fingerprint: "a".repeat(64),
+          },
+        },
+      },
+      { appVersion: "test" },
+      10,
+    );
     expect(JSON.stringify(file)).not.toContain("data:");
+    expect(JSON.stringify(file)).not.toContain("blob:");
     expect(parseProjectFile(file).project.audio.fingerprint).toBe("b".repeat(64));
+    expect(parseProjectFile(file).project.visual?.backgroundImage?.fileName).toBe("local.png");
   });
 
   it("rejects future project files before mutation", () => {

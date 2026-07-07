@@ -7,6 +7,7 @@ import {
   transcriptResultSchema,
 } from "../alignment/engine";
 import { canonicalLyricsSchema } from "../lyrics/canonical";
+import { visualThemeSchema } from "../rendering/schema";
 
 export const audioProjectInputSchema = z.object({
   durationMs: z.number().int().positive(),
@@ -90,6 +91,7 @@ export const editorProjectSchemaV1 = z.object({
   audio: projectAudioLinkSchema,
   alignment: alignmentResultSchema,
   lines: z.array(editorLineSchema),
+  visual: visualThemeSchema.optional(),
 });
 
 export const projectFileSchemaV1 = z.object({

@@ -878,6 +878,82 @@ button:disabled {
   margin-bottom: 0;
 }
 
+.style-workspace {
+  display: grid;
+  gap: 1rem;
+}
+
+.style-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 0.8fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.preview-stage {
+  display: grid;
+  min-height: 18rem;
+  padding: 0.75rem;
+  overflow: auto;
+  background: #202020;
+  border: 2px inset #fff;
+  place-items: center;
+}
+
+.lyric-preview-canvas {
+  display: block;
+  width: min(100%, 54rem);
+  max-height: min(62vh, 34rem);
+  object-fit: contain;
+  background: #101018;
+  border: 1px solid #000;
+  box-shadow: 0 0 0 1px #fff;
+}
+
+.preview-toolbar {
+  margin-top: 0.75rem;
+}
+
+.preview-toolbar label:has(input[type="checkbox"]),
+.style-controls label:has(input[type="checkbox"]) {
+  display: flex;
+  min-width: auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.style-controls {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.65rem;
+}
+
+.style-controls label {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+  font-weight: 700;
+}
+
+.style-controls select,
+.style-controls input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+}
+
+.style-controls input[type="color"] {
+  height: 2.4rem;
+  padding: 0.15rem;
+  background: #fff;
+  border: 2px inset #fff;
+}
+
+.background-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 @media (max-width: 54rem) {
   .workspace {
     grid-template-columns: 1fr;
@@ -887,6 +963,10 @@ button:disabled {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+  }
+
+  .style-layout {
+    grid-template-columns: 1fr;
   }
 }
 

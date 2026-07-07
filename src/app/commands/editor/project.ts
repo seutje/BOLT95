@@ -7,6 +7,7 @@ import {
   type ProjectAudioLink,
   type ProjectFileV1,
 } from "../../../domain/project/schema";
+import { defaultVisualTheme } from "../../../domain/rendering/schema";
 import type { AudioImportResult } from "../../../media/audio/types";
 
 export interface ProjectBuildInfo {
@@ -63,6 +64,7 @@ export function createEditorProject(
     audio: audioLinkFromImport(audio),
     alignment,
     lines,
+    visual: defaultVisualTheme,
   });
 }
 

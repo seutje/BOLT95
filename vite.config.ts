@@ -37,9 +37,21 @@ function runtimeModelManifest(): Plugin {
   };
 }
 
+function developmentCsp(): Plugin {
+  return {
+    name: "bolt95-development-csp",
+    transformIndexHtml(html, context) {
+      if (context.server) {
+        return html.replace("style-src 'self'", "style-src 'self' 'unsafe-inline'");
+      }
+      return html;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   base: process.env.VITE_BASE_PATH ?? (mode === "subpath" ? "/BOLT95/" : "/"),
-  plugins: [react(), runtimeModelManifest()],
+  plugins: [react(), runtimeModelManifest(), developmentCsp()],
   define: {
     __APP_VERSION__: JSON.stringify(packageManifest.version),
     __COMMIT_HASH__: JSON.stringify(commitHash()),
