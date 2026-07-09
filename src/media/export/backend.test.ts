@@ -146,8 +146,10 @@ describe("draft video backend", () => {
     expect(backend.id).toBe("webcodecs-mp4");
     expect(backend.container).toBe("mp4");
     expect(backend.videoCodec).toBe("avc");
+    expect(backend.audioCodec).toBe("aac");
     expect(backend.fullCodecString).toBe("avc1.42E028");
     expect(backend.mimeType).toContain("video/mp4");
+    expect(backend.mimeType).toContain("mp4a.40.2");
   });
 
   it("disables MP4 export when no H.264 profile is supported", async () => {
@@ -163,6 +165,13 @@ describe("draft video backend", () => {
     const backend = await probeMp4VideoBackend(fullExportPresets[2]);
     expect(backend.supported).toBe(false);
     expect(backend.detail).toMatch(/H\.264/u);
+  });
+
+  it("disables MP4 export when AAC audio is unavailable", async () => {
+    mockedCanEncodeAudio.mockImplementation(async (codec) => codec !== "aac");
+    const backend = await probeMp4VideoBackend(fullExportPresets[2]);
+    expect(backend.supported).toBe(false);
+    expect(backend.detail).toMatch(/AAC/u);
   });
 
   it("caps draft duration to five seconds and keeps project preset draft-only", () => {

@@ -1,4 +1,5 @@
 import {
+  AudioBufferSource,
   BufferTarget,
   EncodedPacket,
   EncodedVideoPacketSource,
@@ -12,6 +13,8 @@ import { withDefaultVisualTheme } from "../../../domain/rendering/schema";
 import { lyricsForFrame } from "../../../domain/rendering/timing";
 import type { AudioImportResult } from "../../audio/types";
 import {
+  DRAFT_EXPORT_AUDIO_SAMPLE_RATE,
+  FULL_EXPORT_AUDIO_BITRATE,
   FULL_EXPORT_VIDEO_BITRATE,
   LONG_EXPORT_SYNC_TOLERANCE_MS,
   exportDurationMs,
@@ -63,6 +66,29 @@ function makeFileName(project: EditorProject, presetId: RenderPreset, draft: boo
   return `${titleBase(project)}.${presetId}${draft ? ".draft" : ""}.mp4`;
 }
 
+function createMp4AudioBuffer(audio: AudioImportResult, durationMs: number): AudioBuffer {
+  const outputLength = Math.max(
+    1,
+    Math.round((durationMs / 1_000) * DRAFT_EXPORT_AUDIO_SAMPLE_RATE),
+  );
+  const buffer = new AudioBuffer({
+    length: outputLength,
+    numberOfChannels: 1,
+    sampleRate: DRAFT_EXPORT_AUDIO_SAMPLE_RATE,
+  });
+  const channel = buffer.getChannelData(0);
+  const source = audio.pcm;
+  const ratio = audio.sampleRate / DRAFT_EXPORT_AUDIO_SAMPLE_RATE;
+  for (let index = 0; index < channel.length; index += 1) {
+    const sourcePosition = index * ratio;
+    const left = Math.floor(sourcePosition);
+    const right = Math.min(source.length - 1, left + 1);
+    const fraction = sourcePosition - left;
+    channel[index] = (source[left] ?? 0) * (1 - fraction) + (source[right] ?? 0) * fraction;
+  }
+  return buffer;
+}
+
 function copyChunkData(chunk: EncodedVideoChunk): Uint8Array {
   const data = new Uint8Array(chunk.byteLength);
   chunk.copyTo(data);
@@ -97,6 +123,7 @@ export async function exportWebCodecsMp4({
   if (!backend.supported) throw new Error(backend.detail);
   if (backend.id !== "webcodecs-mp4") throw new Error("WebCodecs MP4 backend is required.");
   if (!backend.fullCodecString) throw new Error("MP4 H.264 codec probe is missing.");
+  if (backend.audioCodec !== "aac") throw new Error("MP4 AAC audio codec probe is missing.");
   if (typeof VideoEncoder === "undefined") throw new Error("VideoEncoder is unavailable.");
 
   const basePreset = videoPresetForProject(project, presetId);
@@ -121,10 +148,15 @@ export async function exportWebCodecsMp4({
     target,
   });
   const videoSource = new EncodedVideoPacketSource("avc");
+  const audioSource = new AudioBufferSource({
+    codec: backend.audioCodec,
+    bitrate: FULL_EXPORT_AUDIO_BITRATE,
+  });
   output.addVideoTrack(videoSource, {
     frameRate: preset.frameRate,
     maximumPacketCount: preset.frameCount,
   });
+  output.addAudioTrack(audioSource);
 
   let encodedPackets = 0;
   let sequenceNumber = 0;
@@ -173,6 +205,9 @@ export async function exportWebCodecsMp4({
     const support = await VideoEncoder.isConfigSupported(config);
     if (!support.supported) throw new Error(`H.264 encoder rejected ${config.codec}.`);
     encoder.configure(support.config ?? config);
+    throwIfAborted(signal);
+    onProgress({ phase: "audio", progress: 0.06, message: "Encoding MP4 AAC audio." });
+    const audioPromise = audioSource.add(createMp4AudioBuffer(audio, durationMs));
 
     for (let frame = 0; frame < preset.frameCount; frame += 1) {
       throwIfAborted(signal);
@@ -192,11 +227,12 @@ export async function exportWebCodecsMp4({
       if (frame % 5 === 0) await nextFrame();
       onProgress({
         phase: "frames",
-        progress: 0.05 + ((frame + 1) / preset.frameCount) * 0.82,
+        progress: 0.1 + ((frame + 1) / preset.frameCount) * 0.77,
         message: `Encoded MP4 frame ${frame + 1} of ${preset.frameCount}.`,
       });
     }
 
+    await audioPromise;
     throwIfAborted(signal);
     onProgress({ phase: "finalizing", progress: 0.9, message: "Finalizing MP4 file." });
     await encoder.flush();

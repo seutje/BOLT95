@@ -19,7 +19,7 @@ export const FULL_EXPORT_AUDIO_BITRATE = 160_000;
 export const LONG_EXPORT_SYNC_TOLERANCE_MS = 500;
 
 export type DraftVideoCodec = "vp9" | "vp8" | "avc";
-export type DraftAudioCodec = "opus";
+export type DraftAudioCodec = "opus" | "aac";
 export type ExportMode = "draft" | "full";
 export type ExportBackendKind = "webcodecs-mp4" | "webcodecs-webm" | "mediarecorder-webm";
 
@@ -298,9 +298,10 @@ export async function probeMp4VideoBackend(
   if (
     typeof VideoEncoder === "undefined" ||
     typeof VideoEncoder.isConfigSupported !== "function" ||
+    typeof AudioEncoder === "undefined" ||
     typeof HTMLCanvasElement === "undefined"
   ) {
-    return unavailableMp4("WebCodecs H.264 and canvas are required for MP4 export.");
+    return unavailableMp4("WebCodecs H.264, AAC audio, and canvas are required for MP4 export.");
   }
 
   const candidates = ["avc1.42E028", "avc1.4D4028", "avc1.640028", "avc1.42E01E"] as const;
@@ -318,15 +319,22 @@ export async function probeMp4VideoBackend(
     try {
       const support = await VideoEncoder.isConfigSupported({ ...baseConfig, codec });
       if (support.supported) {
+        const aac = await canEncodeAudio("aac", {
+          numberOfChannels: 1,
+          sampleRate: DRAFT_EXPORT_AUDIO_SAMPLE_RATE,
+          bitrate: FULL_EXPORT_AUDIO_BITRATE,
+        });
+        if (!aac) return unavailableMp4("WebCodecs AAC audio is unavailable for MP4 export.");
         return {
           id: "webcodecs-mp4",
           label: "MP4 (H.264)",
           container: "mp4",
           videoCodec: "avc",
+          audioCodec: "aac",
           fullCodecString: support.config?.codec ?? codec,
-          mimeType: `video/mp4;codecs=${support.config?.codec ?? codec}`,
+          mimeType: `video/mp4;codecs=${support.config?.codec ?? codec},mp4a.40.2`,
           supported: true,
-          detail: `WebCodecs H.264 probe passed with ${support.config?.codec ?? codec}.`,
+          detail: `WebCodecs H.264 and AAC probes passed with ${support.config?.codec ?? codec}.`,
           deterministic: true,
         };
       }
