@@ -7,6 +7,7 @@ import { serializeCaptionExport } from "../../domain/captions/serializers";
 import type { EditorProject } from "../../domain/project/schema";
 import type { RenderPreset } from "../../domain/rendering/schema";
 import { downloadBlob, downloadText } from "../../infrastructure/downloads/blobDownload";
+import { loadProjectBackgroundAsset } from "../../infrastructure/storage/projects";
 import type { AudioImportResult } from "../../media/audio/types";
 import {
   draftPresetForProject,
@@ -25,6 +26,7 @@ import {
 import { exportMediaRecorderWebm } from "../../media/export/mediarecorder/canvasWebm";
 import { exportDraftWebm } from "../../media/export/webcodecs/draftWebm";
 import { exportWebCodecsMp4 } from "../../media/export/webcodecs/mp4";
+import { loadImageFromBlob, type LoadedImage } from "../../media/images/loadImage";
 
 interface ExportWorkspaceProps {
   readonly audio: AudioImportResult | null;
@@ -93,7 +95,9 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   const [videoResult, setVideoResult] = useState<DraftExportResult | null>(null);
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | undefined>();
   const controllerRef = useRef<AbortController | null>(null);
+  const loadedBackgroundRef = useRef<LoadedImage | null>(null);
   const exportPayload = useMemo(() => {
     if (!project) return null;
     return format === "project-json"
@@ -131,6 +135,14 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
     ],
     [qualifiedFullPresets],
   );
+  const projectId = project?.id;
+  const backgroundMetadata = project?.visual?.backgroundImage;
+
+  function replaceLoadedBackground(next: LoadedImage | null): void {
+    loadedBackgroundRef.current?.dispose();
+    loadedBackgroundRef.current = next;
+    setBackgroundImage(next?.image);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -165,9 +177,58 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   useEffect(
     () => () => {
       controllerRef.current?.abort();
+      loadedBackgroundRef.current?.dispose();
+      loadedBackgroundRef.current = null;
     },
     [],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    const clearAsync = (): void => {
+      void Promise.resolve().then(() => {
+        if (!cancelled) replaceLoadedBackground(null);
+      });
+    };
+    if (!projectId || !backgroundMetadata) {
+      clearAsync();
+      return () => {
+        cancelled = true;
+      };
+    }
+    void loadProjectBackgroundAsset({ projectId, backgroundImage: backgroundMetadata })
+      .then(async (blob) => {
+        if (cancelled) return;
+        if (!blob) {
+          replaceLoadedBackground(null);
+          setVideoStatus("Background image is not relinked; export will use the background color.");
+          return;
+        }
+        const loaded = await loadImageFromBlob(blob);
+        if (cancelled) {
+          loaded.dispose();
+          return;
+        }
+        replaceLoadedBackground(loaded);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          replaceLoadedBackground(null);
+          setVideoStatus(
+            "Background image could not be loaded; export will use the background color.",
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    backgroundMetadata,
+    backgroundMetadata?.fileName,
+    backgroundMetadata?.fileSize,
+    backgroundMetadata?.fingerprint,
+    projectId,
+  ]);
 
   if (!project) {
     return (
@@ -220,6 +281,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
               audio,
               backend,
               presetId,
+              ...(backgroundImage ? { backgroundImage } : {}),
               signal: controller.signal,
               onProgress: progressHandler,
             })
@@ -229,6 +291,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
                 audio,
                 backend,
                 presetId,
+                ...(backgroundImage ? { backgroundImage } : {}),
                 signal: controller.signal,
                 onProgress: progressHandler,
               })
@@ -237,6 +300,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
                 audio,
                 backend,
                 presetId,
+                ...(backgroundImage ? { backgroundImage } : {}),
                 signal: controller.signal,
                 onProgress: progressHandler,
               });

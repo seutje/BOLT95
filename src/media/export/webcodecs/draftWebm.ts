@@ -30,6 +30,7 @@ export interface ExportDraftWebmOptions {
   readonly audio: AudioImportResult;
   readonly backend: DraftVideoBackend;
   readonly presetId?: RenderPreset;
+  readonly backgroundImage?: CanvasImageSource;
   readonly signal: AbortSignal;
   readonly onProgress?: (progress: DraftExportProgress) => void;
 }
@@ -143,6 +144,7 @@ export async function exportDraftWebm({
   audio,
   backend,
   presetId,
+  backgroundImage,
   signal,
   onProgress = () => undefined,
 }: ExportDraftWebmOptions): Promise<DraftExportResult> {
@@ -203,7 +205,12 @@ export async function exportDraftWebm({
     for (let frame = 0; frame < preset.frameCount; frame += 1) {
       throwIfAborted(signal);
       const timeMs = Math.min(durationMs - 1, Math.round(frame * frameDurationSeconds * 1_000));
-      renderFrame(context, { theme, lyrics: lyricsForFrame(project, timeMs), reducedMotion: true });
+      renderFrame(context, {
+        theme,
+        lyrics: lyricsForFrame(project, timeMs),
+        reducedMotion: true,
+        ...(backgroundImage ? { backgroundImage } : {}),
+      });
       await videoSource.add(frame * frameDurationSeconds, frameDurationSeconds, {
         keyFrame: frame % preset.frameRate === 0,
       });

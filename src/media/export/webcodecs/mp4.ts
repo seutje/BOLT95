@@ -30,6 +30,7 @@ export interface ExportWebCodecsMp4Options {
   readonly audio: AudioImportResult;
   readonly backend: DraftVideoBackend;
   readonly presetId?: RenderPreset;
+  readonly backgroundImage?: CanvasImageSource;
   readonly signal: AbortSignal;
   readonly onProgress?: (progress: DraftExportProgress) => void;
 }
@@ -117,6 +118,7 @@ export async function exportWebCodecsMp4({
   audio,
   backend,
   presetId,
+  backgroundImage,
   signal,
   onProgress = () => undefined,
 }: ExportWebCodecsMp4Options): Promise<DraftExportResult> {
@@ -217,7 +219,12 @@ export async function exportWebCodecsMp4({
       const nextTimestamp = Math.round(((frame + 1) * 1_000_000) / preset.frameRate);
       const duration = nextTimestamp - timestamp;
       const timeMs = Math.min(durationMs - 1, Math.round(timestamp / 1_000));
-      renderFrame(context, { theme, lyrics: lyricsForFrame(project, timeMs), reducedMotion: true });
+      renderFrame(context, {
+        theme,
+        lyrics: lyricsForFrame(project, timeMs),
+        reducedMotion: true,
+        ...(backgroundImage ? { backgroundImage } : {}),
+      });
       const videoFrame = new VideoFrame(canvas, { timestamp, duration });
       try {
         encoder.encode(videoFrame, { keyFrame: frame % keyFrameInterval === 0 });

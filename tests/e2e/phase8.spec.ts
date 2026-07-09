@@ -62,6 +62,9 @@ test("style preview renders all ratios and stores only background metadata", asy
   await expect(page.getByText("metadata only")).toBeVisible();
 
   await page.getByRole("button", { name: "7. Export" }).click();
+  await page.getByRole("button", { name: "6. Style" }).click();
+  await expect(page.getByText("Background restored from local storage.")).toBeVisible();
+  await page.getByRole("button", { name: "7. Export" }).click();
   await page.getByLabel("Project JSON").check();
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: /Download Project JSON/u }).click();

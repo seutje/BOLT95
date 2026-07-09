@@ -19,6 +19,7 @@ export interface ExportMediaRecorderWebmOptions {
   readonly audio: AudioImportResult;
   readonly backend: DraftVideoBackend;
   readonly presetId?: RenderPreset;
+  readonly backgroundImage?: CanvasImageSource;
   readonly signal: AbortSignal;
   readonly onProgress?: (progress: DraftExportProgress) => void;
 }
@@ -65,6 +66,7 @@ export async function exportMediaRecorderWebm({
   audio,
   backend,
   presetId,
+  backgroundImage,
   signal,
   onProgress = () => undefined,
 }: ExportMediaRecorderWebmOptions): Promise<DraftExportResult> {
@@ -117,7 +119,12 @@ export async function exportMediaRecorderWebm({
     for (let frame = 0; frame < preset.frameCount; frame += 1) {
       throwIfAborted(signal);
       const timeMs = Math.min(durationMs - 1, Math.round(frame * frameDurationMs));
-      renderFrame(context, { theme, lyrics: lyricsForFrame(project, timeMs), reducedMotion: true });
+      renderFrame(context, {
+        theme,
+        lyrics: lyricsForFrame(project, timeMs),
+        reducedMotion: true,
+        ...(backgroundImage ? { backgroundImage } : {}),
+      });
       (stream.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack | undefined)?.requestFrame();
       await nextFrame();
       onProgress({

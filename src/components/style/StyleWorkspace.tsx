@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { saveProject } from "../../infrastructure/storage/projects";
+import {
+  deleteProjectBackgroundAsset,
+  loadProjectBackgroundAsset,
+  saveProject,
+  saveProjectBackgroundAsset,
+} from "../../infrastructure/storage/projects";
 import { fingerprintBytes } from "../../media/audio/fingerprint";
+import { loadImageFromBlob, type LoadedImage } from "../../media/images/loadImage";
 import { PreviewCanvas } from "../preview/PreviewCanvas";
 import type { EditorProject } from "../../domain/project/schema";
 import { renderPresets } from "../../domain/rendering/presets";
@@ -43,10 +49,10 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
   const [playing, setPlaying] = useState(false);
   const [drawSafeArea, setDrawSafeArea] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(reduceMotionPreferred);
-  const [backgroundUrl, setBackgroundUrl] = useState<string | null>(null);
   const [backgroundImage, setBackgroundImage] = useState<HTMLImageElement | undefined>();
   const [status, setStatus] = useState("Preview ready.");
   const clockRef = useRef<AudioPlaybackClock | null>(null);
+  const loadedBackgroundRef = useRef<LoadedImage | null>(null);
   const activeLine = useMemo(() => {
     if (!project) return null;
     return (
@@ -54,6 +60,8 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
       null
     );
   }, [previewTimeMs, project]);
+  const projectId = project?.id;
+  const backgroundMetadata = project?.visual?.backgroundImage;
 
   useEffect(() => {
     if (!audio) return undefined;
@@ -72,23 +80,65 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
     };
   }, [audio]);
 
-  useEffect(() => {
-    if (!backgroundUrl) return undefined;
-    const image = new Image();
-    image.onload = () => setBackgroundImage(image);
-    image.src = backgroundUrl;
-    return () => {
-      image.onload = null;
-      setBackgroundImage(undefined);
-    };
-  }, [backgroundUrl]);
+  function replaceLoadedBackground(next: LoadedImage | null): void {
+    loadedBackgroundRef.current?.dispose();
+    loadedBackgroundRef.current = next;
+    setBackgroundImage(next?.image);
+  }
 
   useEffect(
     () => () => {
-      if (backgroundUrl) URL.revokeObjectURL(backgroundUrl);
+      loadedBackgroundRef.current?.dispose();
+      loadedBackgroundRef.current = null;
     },
-    [backgroundUrl],
+    [],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+    const clearAsync = (): void => {
+      void Promise.resolve().then(() => {
+        if (!cancelled) replaceLoadedBackground(null);
+      });
+    };
+    if (!projectId || !backgroundMetadata) {
+      clearAsync();
+      return () => {
+        cancelled = true;
+      };
+    }
+    void loadProjectBackgroundAsset({ projectId, backgroundImage: backgroundMetadata })
+      .then(async (blob) => {
+        if (cancelled) return;
+        if (!blob) {
+          replaceLoadedBackground(null);
+          setStatus("Background metadata found. Relink the local image to preview and export it.");
+          return;
+        }
+        const loaded = await loadImageFromBlob(blob);
+        if (cancelled) {
+          loaded.dispose();
+          return;
+        }
+        replaceLoadedBackground(loaded);
+        setStatus("Background restored from local storage.");
+      })
+      .catch(() => {
+        if (!cancelled) {
+          replaceLoadedBackground(null);
+          setStatus("Background could not be restored. Relink the local image.");
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    backgroundMetadata,
+    backgroundMetadata?.fileName,
+    backgroundMetadata?.fileSize,
+    backgroundMetadata?.fingerprint,
+    projectId,
+  ]);
 
   useEffect(() => {
     if (!project) return undefined;
@@ -144,10 +194,11 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
     );
   }
 
+  const currentProject = project;
+
   function updateTheme(patch: Partial<VisualTheme>): void {
-    if (!project) return;
     const next = {
-      ...project,
+      ...currentProject,
       updatedAt: Date.now(),
       visual: { ...theme, ...patch },
     };
@@ -156,12 +207,17 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
   }
 
   async function chooseBackground(file: File): Promise<void> {
-    const oldUrl = backgroundUrl;
-    const nextUrl = URL.createObjectURL(file);
-    setBackgroundUrl(nextUrl);
-    if (oldUrl) URL.revokeObjectURL(oldUrl);
-    setBackgroundImage(undefined);
     const fingerprint = await fingerprintBytes(await file.arrayBuffer());
+    await saveProjectBackgroundAsset({
+      projectId: currentProject.id,
+      fileName: file.name,
+      fileSize: file.size,
+      fingerprint,
+      mimeType: file.type || "application/octet-stream",
+      blob: file,
+    });
+    const loaded = await loadImageFromBlob(file);
+    replaceLoadedBackground(loaded);
     updateTheme({
       backgroundImage: {
         fileName: file.name,
@@ -169,15 +225,20 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
         fingerprint,
       },
     });
-    setStatus("Background linked for this session. Project JSON stores metadata only.");
+    setStatus("Background saved locally. Project JSON stores metadata only.");
   }
 
   function clearBackground(): void {
-    if (backgroundUrl) URL.revokeObjectURL(backgroundUrl);
-    setBackgroundUrl(null);
-    setBackgroundImage(undefined);
+    replaceLoadedBackground(null);
+    void deleteProjectBackgroundAsset(currentProject.id);
     updateTheme({ backgroundImage: undefined });
     setStatus("Background cleared.");
+  }
+
+  function resetStyle(): void {
+    replaceLoadedBackground(null);
+    void deleteProjectBackgroundAsset(currentProject.id);
+    updateTheme(defaultVisualTheme);
   }
 
   return (
@@ -430,7 +491,7 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
               Clear image
             </button>
           </div>
-          <button type="button" onClick={() => updateTheme(defaultVisualTheme)}>
+          <button type="button" onClick={resetStyle}>
             Reset style
           </button>
         </section>
