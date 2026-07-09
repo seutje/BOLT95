@@ -3,8 +3,38 @@
 BOLT95 is a static, local-first lyric timing and lyric-video application. Media,
 lyrics, transcripts, projects, and generated output stay in the browser.
 
-The production site is built for `https://x.github.io/BOLT95/` and does not require
+The production site is built for <https://seutje.github.io/BOLT95/> and does not require
 a server, API, account, runtime secret, or cross-origin isolation.
+
+## User guide
+
+![BOLT95 application shell](tests/e2e/phase1.spec.ts-snapshots/shell-desktop-linux.png)
+
+BOLT95 runs entirely in your browser. Audio, lyrics, transcripts, projects, cached
+models, background images, and generated exports stay local to the browser profile
+you use.
+
+1. Open the app at <https://seutje.github.io/BOLT95/>.
+2. In **1. Import**, choose or drop an audio file. Paste lyrics, load a TXT/LRC
+   lyrics file, import a saved `.bolt95.json` project, or continue with audio only.
+3. In **2. Transcribe**, download or choose the local Whisper model when prompted,
+   then run transcription. For test and demo workflows, the deterministic transcript
+   option can produce repeatable timing without a model.
+4. In **3. Align** and **4. Review**, align the transcript timing to the lyrics and
+   inspect warnings or low-confidence lines. Supplied lyrics remain the source text;
+   transcription is only used as timing evidence.
+5. In **5. Edit**, play and seek the track, adjust line text and start/end times,
+   split or merge lines, nudge timings, and use undo/redo while reviewing the
+   waveform.
+6. In **6. Style**, preview the lyric video, choose square, portrait, or landscape
+   presets, adjust the visual theme, and optionally relink a local background image.
+7. In **7. Export**, download LRC, enhanced LRC, SRT, WebVTT, or project JSON. On
+   supported Chromium browsers, you can also export a WebM or MP4 lyric video.
+
+Use **File**, **View**, and **Help** for privacy notes, browser capability details,
+safe diagnostics, project recovery, and clearing local data. Project JSON files do
+not contain audio bytes, so reopening a project may ask you to relink the original
+audio file.
 
 ## Development
 
