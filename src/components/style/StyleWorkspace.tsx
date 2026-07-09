@@ -53,6 +53,7 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
   const [status, setStatus] = useState("Preview ready.");
   const clockRef = useRef<AudioPlaybackClock | null>(null);
   const loadedBackgroundRef = useRef<LoadedImage | null>(null);
+  const loadedBackgroundFingerprintRef = useRef<string | null>(null);
   const activeLine = useMemo(() => {
     if (!project) return null;
     return (
@@ -80,9 +81,10 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
     };
   }, [audio]);
 
-  function replaceLoadedBackground(next: LoadedImage | null): void {
+  function replaceLoadedBackground(next: LoadedImage | null, fingerprint: string | null = null): void {
     loadedBackgroundRef.current?.dispose();
     loadedBackgroundRef.current = next;
+    loadedBackgroundFingerprintRef.current = next ? fingerprint : null;
     setBackgroundImage(next?.image);
   }
 
@@ -90,6 +92,7 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
     () => () => {
       loadedBackgroundRef.current?.dispose();
       loadedBackgroundRef.current = null;
+      loadedBackgroundFingerprintRef.current = null;
     },
     [],
   );
@@ -107,6 +110,11 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
         cancelled = true;
       };
     }
+    if (loadedBackgroundFingerprintRef.current === backgroundMetadata.fingerprint) {
+      return () => {
+        cancelled = true;
+      };
+    }
     void loadProjectBackgroundAsset({ projectId, backgroundImage: backgroundMetadata })
       .then(async (blob) => {
         if (cancelled) return;
@@ -120,7 +128,7 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
           loaded.dispose();
           return;
         }
-        replaceLoadedBackground(loaded);
+        replaceLoadedBackground(loaded, backgroundMetadata.fingerprint);
         setStatus("Background restored from local storage.");
       })
       .catch(() => {
@@ -217,7 +225,7 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
       blob: file,
     });
     const loaded = await loadImageFromBlob(file);
-    replaceLoadedBackground(loaded);
+    replaceLoadedBackground(loaded, fingerprint);
     updateTheme({
       backgroundImage: {
         fileName: file.name,
