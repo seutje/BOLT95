@@ -63,13 +63,21 @@ function formatSeconds(milliseconds: number): string {
 
 function exportErrorMessage(error: unknown): string {
   if (error instanceof DOMException && error.name === "AbortError")
-    return "Video export cancelled.";
+    return "Draft export cancelled.";
   return error instanceof Error ? error.message : "Video export failed.";
 }
 
 function jobPhaseForProgress(phase: DraftExportProgress["phase"]) {
   if (phase === "frames" || phase === "audio" || phase === "verifying") return "processing";
   return phase;
+}
+
+function preferredBackend(results: readonly DraftVideoBackend[]): DraftVideoBackend {
+  return (
+    results.find((candidate) => candidate.supported) ??
+    results.find((candidate) => candidate.container === "webm") ??
+    results[0]!
+  );
 }
 
 export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
@@ -134,7 +142,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
       .then((results) => {
         if (cancelled) return;
         setBackends(results);
-        const preferred = results.find((candidate) => candidate.supported) ?? results[0]!;
+        const preferred = preferredBackend(results);
         setBackendId((current) =>
           results.find((candidate) => candidate.id === current)?.supported ? current : preferred.id,
         );
