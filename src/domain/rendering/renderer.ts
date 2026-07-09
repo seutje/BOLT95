@@ -83,11 +83,7 @@ function paintBackground(
   context.fillRect(0, 0, preset.width, preset.height);
 }
 
-function measuredLineX(
-  theme: VisualTheme,
-  layout: FrameLayout,
-  measuredWidth: number,
-): number {
+function measuredLineX(theme: VisualTheme, layout: FrameLayout, measuredWidth: number): number {
   const { safeArea } = layout;
   if (theme.textAlign === "left") return safeArea.x;
   if (theme.textAlign === "right") return safeArea.x + safeArea.width - measuredWidth;

@@ -16,16 +16,14 @@ interface ImageCall {
   readonly height: number;
 }
 
-function contextStub(fillCalls: TextCall[], imageCalls: ImageCall[] = []): CanvasRenderingContext2D {
+function contextStub(
+  fillCalls: TextCall[],
+  imageCalls: ImageCall[] = [],
+): CanvasRenderingContext2D {
   const context = {
     clearRect: () => undefined,
-    drawImage: (
-      _image: CanvasImageSource,
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-    ) => imageCalls.push({ x, y, width, height }),
+    drawImage: (_image: CanvasImageSource, x: number, y: number, width: number, height: number) =>
+      imageCalls.push({ x, y, width, height }),
     fillRect: () => undefined,
     fillText: (text: string, x: number, y: number) => fillCalls.push({ text, x, y }),
     measureText: (text: string) => ({ width: text.length * 10 }),
