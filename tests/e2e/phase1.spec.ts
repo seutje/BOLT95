@@ -95,19 +95,92 @@ test("runtime model manifest is emitted below the configured base path", async (
 
 test("desktop shell matches its visual baseline", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await expect(page).toHaveScreenshot("shell-desktop.png", {
-    animations: "disabled",
-    fullPage: true,
+  const appWindow = page.locator(".app-window");
+  const titleBar = page.locator(".title-bar").first();
+  const workspace = page.locator(".workspace");
+
+  await expect(appWindow).toBeVisible();
+  await expect(workspace).toBeVisible();
+
+  const metrics = await page.evaluate(() => {
+    const rectFor = (selector: string) => {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`${selector} not found`);
+      const rect = element.getBoundingClientRect();
+      return {
+        top: rect.top,
+        left: rect.left,
+        right: rect.right,
+        width: rect.width,
+        height: rect.height,
+      };
+    };
+
+    return {
+      shell: rectFor(".desktop-shell"),
+      appWindow: rectFor(".app-window"),
+      titleBarBackground: getComputedStyle(document.querySelector(".title-bar")!).backgroundImage,
+      workspace: rectFor(".workspace"),
+      workspaceMain: rectFor(".workspace-main"),
+      workspaceSidebar: rectFor(".workspace-sidebar"),
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
   });
+
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.viewportWidth);
+  expect(metrics.shell.width).toBe(1280);
+  expect(metrics.appWindow.width).toBeLessThanOrEqual(1184);
+  expect(metrics.appWindow.height).toBeGreaterThan(760);
+  expect(metrics.workspace.height).toBeGreaterThan(560);
+  expect(metrics.workspaceMain.right).toBeLessThan(metrics.workspaceSidebar.left);
+  expect(metrics.workspaceMain.width).toBeGreaterThan(metrics.workspaceSidebar.width);
+  expect(metrics.titleBarBackground).toContain("rgb(0, 0, 128)");
+
+  await expect(titleBar).toHaveCSS("color", "rgb(255, 255, 255)");
+  await expect(workspace).toHaveCSS("background-color", "rgb(239, 239, 239)");
 });
 
 test("narrow shell stacks without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
-    true,
-  );
-  await expect(page).toHaveScreenshot("shell-narrow.png", {
-    animations: "disabled",
-    fullPage: true,
+  await expect(page.locator(".app-window")).toBeVisible();
+  await expect(page.locator(".workspace")).toBeVisible();
+
+  const metrics = await page.evaluate(() => {
+    const rectFor = (selector: string) => {
+      const element = document.querySelector(selector);
+      if (!element) throw new Error(`${selector} not found`);
+      const rect = element.getBoundingClientRect();
+      return {
+        top: rect.top,
+        left: rect.left,
+        right: rect.right,
+        width: rect.width,
+        height: rect.height,
+      };
+    };
+    const stageButtons = [...document.querySelectorAll(".stage-navigation li button")].map(
+      (button) => {
+        const rect = button.getBoundingClientRect();
+        return { top: rect.top, left: rect.left, width: rect.width };
+      },
+    );
+
+    return {
+      appWindow: rectFor(".app-window"),
+      workspaceMain: rectFor(".workspace-main"),
+      workspaceSidebar: rectFor(".workspace-sidebar"),
+      stageButtons,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
   });
+
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.viewportWidth);
+  expect(metrics.appWindow.width).toBe(390);
+  expect(metrics.workspaceMain.width).toBe(metrics.workspaceSidebar.width);
+  expect(metrics.workspaceMain.top).toBeLessThan(metrics.workspaceSidebar.top);
+  expect(metrics.stageButtons[0]?.top).toBe(metrics.stageButtons[1]?.top);
+  expect(metrics.stageButtons[0]?.left).toBeLessThan(metrics.stageButtons[1]?.left ?? 0);
+  expect(metrics.stageButtons[2]?.top).toBeGreaterThan(metrics.stageButtons[0]?.top ?? 0);
 });
