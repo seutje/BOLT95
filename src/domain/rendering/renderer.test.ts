@@ -9,10 +9,23 @@ interface TextCall {
   readonly y: number;
 }
 
-function contextStub(fillCalls: TextCall[]): CanvasRenderingContext2D {
+interface ImageCall {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+function contextStub(fillCalls: TextCall[], imageCalls: ImageCall[] = []): CanvasRenderingContext2D {
   const context = {
     clearRect: () => undefined,
-    drawImage: () => undefined,
+    drawImage: (
+      _image: CanvasImageSource,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+    ) => imageCalls.push({ x, y, width, height }),
     fillRect: () => undefined,
     fillText: (text: string, x: number, y: number) => fillCalls.push({ text, x, y }),
     measureText: (text: string) => ({ width: text.length * 10 }),
@@ -88,5 +101,26 @@ describe("lyric frame renderer", () => {
     expect(loom).toBeDefined();
     expect(of).toBeDefined();
     expect(of!.x - loom!.x).toBe(50);
+  });
+
+  it("contains background images without changing their aspect ratio", () => {
+    const lyrics: FrameLyrics = {
+      current: {
+        id: "current",
+        role: "current",
+        text: "wide background",
+        words: [],
+      },
+    };
+    const imageCalls: ImageCall[] = [];
+    const image = { naturalWidth: 1600, naturalHeight: 900 } as HTMLImageElement;
+
+    renderFrame(contextStub([], imageCalls), {
+      theme: { ...theme(), preset: "square-draft" },
+      lyrics,
+      backgroundImage: image,
+    });
+
+    expect(imageCalls).toEqual([{ x: 0, y: 118.125, width: 540, height: 303.75 }]);
   });
 });

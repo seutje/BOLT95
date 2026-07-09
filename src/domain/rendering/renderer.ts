@@ -10,10 +10,52 @@ export interface RenderFrameInput {
   readonly reducedMotion?: boolean;
 }
 
+interface SourceDimensions {
+  readonly width: number;
+  readonly height: number;
+}
+
 function fontFamily(theme: VisualTheme): string {
   if (theme.fontFamily === "serif") return "Georgia, serif";
   if (theme.fontFamily === "mono") return '"Courier New", monospace';
   return 'Tahoma, "MS Sans Serif", Geneva, sans-serif';
+}
+
+function numericProperty(source: CanvasImageSource, key: string): number | undefined {
+  const value = (source as unknown as Record<string, unknown>)[key];
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+function backgroundSourceDimensions(source: CanvasImageSource): SourceDimensions | undefined {
+  const width =
+    numericProperty(source, "naturalWidth") ??
+    numericProperty(source, "videoWidth") ??
+    numericProperty(source, "displayWidth") ??
+    numericProperty(source, "width");
+  const height =
+    numericProperty(source, "naturalHeight") ??
+    numericProperty(source, "videoHeight") ??
+    numericProperty(source, "displayHeight") ??
+    numericProperty(source, "height");
+  return width && height ? { width, height } : undefined;
+}
+
+function containedImageRect(
+  source: CanvasImageSource,
+  targetWidth: number,
+  targetHeight: number,
+): { readonly x: number; readonly y: number; readonly width: number; readonly height: number } {
+  const dimensions = backgroundSourceDimensions(source);
+  if (!dimensions) return { x: 0, y: 0, width: targetWidth, height: targetHeight };
+  const scale = Math.min(targetWidth / dimensions.width, targetHeight / dimensions.height);
+  const width = dimensions.width * scale;
+  const height = dimensions.height * scale;
+  return {
+    x: (targetWidth - width) / 2,
+    y: (targetHeight - height) / 2,
+    width,
+    height,
+  };
 }
 
 function paintBackground(
@@ -28,7 +70,14 @@ function paintBackground(
   context.save();
   if (input.theme.backgroundBlur > 0) context.filter = `blur(${input.theme.backgroundBlur}px)`;
   context.globalAlpha = 0.72;
-  context.drawImage(input.backgroundImage, 0, 0, preset.width, preset.height);
+  const imageRect = containedImageRect(input.backgroundImage, preset.width, preset.height);
+  context.drawImage(
+    input.backgroundImage,
+    imageRect.x,
+    imageRect.y,
+    imageRect.width,
+    imageRect.height,
+  );
   context.restore();
   context.fillStyle = "rgba(0, 0, 0, 0.34)";
   context.fillRect(0, 0, preset.width, preset.height);
