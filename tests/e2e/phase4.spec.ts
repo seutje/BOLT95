@@ -9,7 +9,7 @@ test("downloads models only after explicit action and rejects corrupt bytes befo
 }) => {
   const modelRequests: string[] = [];
   const privateRequests: string[] = [];
-  await page.route("**/models/ggml-tiny-q5_1.bin", async (route) => {
+  await page.route("**/models/ggml-base.en-q5_1.bin", async (route) => {
     modelRequests.push(route.request().url());
     await route.fulfill({
       status: 200,
@@ -37,7 +37,7 @@ test("downloads models only after explicit action and rejects corrupt bytes befo
   await expect(page.getByRole("button", { name: "Transcribe locally" })).toBeDisabled();
 
   expect(modelRequests).toHaveLength(1);
-  expect(modelRequests[0]).toContain("/models/ggml-tiny-q5_1.bin");
+  expect(modelRequests[0]).toContain("/models/ggml-base.en-q5_1.bin");
   expect(privateRequests).toEqual([]);
 
   const accessibility = await new AxeBuilder({ page }).analyze();

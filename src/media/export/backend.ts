@@ -166,7 +166,9 @@ export function videoPresetForProject(
   const projectPreset = project.visual?.preset;
   const requested = presetId ?? projectPreset;
   return (
-    videoExportPresets.find((preset) => preset.id === requested) ?? draftPresetForProject(project)
+    videoExportPresets.find((preset) => preset.id === requested) ??
+    fullExportPresets.find((preset) => preset.id === "square-full") ??
+    draftPresetForProject(project)
   );
 }
 

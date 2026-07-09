@@ -101,8 +101,8 @@ function deterministicE2eTranscript(audio: AudioImportResult): TranscriptionResu
 
 export function TranscriptWorkspace({ audio, onTranscriptReady }: TranscriptWorkspaceProps) {
   const setCurrentJob = useAppStore((state) => state.setCurrentJob);
-  const [languageMode, setLanguageMode] = useState<TranscriptionLanguageMode>("auto");
-  const [modelId, setModelId] = useState("tiny-multilingual-q5_1");
+  const [languageMode, setLanguageMode] = useState<TranscriptionLanguageMode>("en");
+  const [modelId, setModelId] = useState("base-english-q5_1");
   const [cacheEntries, setCacheEntries] = useState<readonly ModelCacheEntry[]>([]);
   const [progress, setProgress] = useState<TranscriptionProgress | null>(null);
   const [result, setResult] = useState<TranscriptionResult | null>(null);

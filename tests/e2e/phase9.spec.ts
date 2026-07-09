@@ -61,6 +61,7 @@ test("draft WebM export can be cancelled and restarted", async ({ page }) => {
       window.setTimeout(() => original(callback), 30) as unknown as number;
   });
   await reachExport(page);
+  await page.getByLabel("Landscape draft").check();
   const exportButton = page.getByRole("button", { name: "Export Draft WebM" });
   await expect(exportButton).toBeEnabled({ timeout: 15_000 });
   await exportButton.click();

@@ -10,7 +10,6 @@ import { downloadBlob, downloadText } from "../../infrastructure/downloads/blobD
 import { loadProjectBackgroundAsset } from "../../infrastructure/storage/projects";
 import type { AudioImportResult } from "../../media/audio/types";
 import {
-  draftPresetForProject,
   exportDurationMs,
   estimateDraftExportRisk,
   fullExportPresets,
@@ -85,9 +84,7 @@ function preferredBackend(results: readonly DraftVideoBackend[]): DraftVideoBack
 export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   const setCurrentJob = useAppStore((state) => state.setCurrentJob);
   const [format, setFormat] = useState<CaptionFormat>("lrc");
-  const [presetId, setPresetId] = useState<RenderPreset>(() =>
-    project ? draftPresetForProject(project).id : "landscape-draft",
-  );
+  const [presetId, setPresetId] = useState<RenderPreset>("square-full");
   const [status, setStatus] = useState("Choose a format to preview and download.");
   const [videoStatus, setVideoStatus] = useState("Checking video export support.");
   const [backends, setBackends] = useState<readonly DraftVideoBackend[]>([]);
@@ -129,11 +126,16 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
     [audio, backend],
   );
   const displayedPresets = useMemo(
-    () => [
-      ...videoExportPresets.filter((preset) => preset.mode === "draft"),
-      ...qualifiedFullPresets,
-    ],
-    [qualifiedFullPresets],
+    () => {
+      const presets = [
+        ...videoExportPresets.filter((preset) => preset.mode === "draft"),
+        ...qualifiedFullPresets,
+      ];
+      if (selectedPreset.mode === "full" && !presets.some((preset) => preset.id === selectedPreset.id))
+        presets.push(selectedPreset);
+      return presets;
+    },
+    [qualifiedFullPresets, selectedPreset],
   );
   const projectId = project?.id;
   const backgroundMetadata = project?.visual?.backgroundImage;

@@ -179,6 +179,10 @@ describe("draft video backend", () => {
     expect(draftPresetForProject(project).id).toBe("landscape-draft");
   });
 
+  it("falls back to square full duration for video export", () => {
+    expect(videoPresetForProject({ ...project, visual: undefined }).id).toBe("square-full");
+  });
+
   it("uses audio duration instead of the final lyric timestamp for video export", () => {
     const shortLyricsProject: EditorProject = {
       ...project,
