@@ -111,22 +111,31 @@ async function waitForVideoMetadata(url: string): Promise<number> {
   }
 }
 
-export async function verifyDraftVideoBlob(
+export async function verifyVideoBlob(
   blob: Blob,
   expectedDurationMs: number,
   toleranceMs = 100,
+  containerLabel = "Video",
 ): Promise<number> {
   const url = URL.createObjectURL(blob);
   try {
     const durationMs = await waitForVideoMetadata(url);
     const driftMs = Math.abs(durationMs - expectedDurationMs);
     if (!Number.isFinite(durationMs) || driftMs > toleranceMs) {
-      throw new Error(`WebM duration drift is ${Math.round(driftMs)} ms.`);
+      throw new Error(`${containerLabel} duration drift is ${Math.round(driftMs)} ms.`);
     }
     return durationMs;
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+export async function verifyDraftVideoBlob(
+  blob: Blob,
+  expectedDurationMs: number,
+  toleranceMs = 100,
+): Promise<number> {
+  return verifyVideoBlob(blob, expectedDurationMs, toleranceMs, "WebM");
 }
 
 export async function exportDraftWebm({
@@ -139,6 +148,7 @@ export async function exportDraftWebm({
 }: ExportDraftWebmOptions): Promise<DraftExportResult> {
   if (!backend.supported) throw new Error(backend.detail);
   if (backend.id !== "webcodecs-webm") throw new Error("WebCodecs WebM backend is required.");
+  if (!backend.audioCodec) throw new Error("WebM audio codec probe is missing.");
   const basePreset = videoPresetForProject(project, presetId);
   const preset = {
     ...basePreset,

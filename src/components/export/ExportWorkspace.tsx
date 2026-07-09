@@ -15,6 +15,7 @@ import {
   fullExportPresets,
   probeMediaRecorderBackend,
   probeDraftVideoBackend,
+  probeMp4VideoBackend,
   videoExportPresets,
   videoPresetForProject,
   type DraftExportProgress,
@@ -23,6 +24,7 @@ import {
 } from "../../media/export/backend";
 import { exportMediaRecorderWebm } from "../../media/export/mediarecorder/canvasWebm";
 import { exportDraftWebm } from "../../media/export/webcodecs/draftWebm";
+import { exportWebCodecsMp4 } from "../../media/export/webcodecs/mp4";
 
 interface ExportWorkspaceProps {
   readonly audio: AudioImportResult | null;
@@ -61,8 +63,8 @@ function formatSeconds(milliseconds: number): string {
 
 function exportErrorMessage(error: unknown): string {
   if (error instanceof DOMException && error.name === "AbortError")
-    return "Draft export cancelled.";
-  return error instanceof Error ? error.message : "Draft export failed.";
+    return "Video export cancelled.";
+  return error instanceof Error ? error.message : "Video export failed.";
 }
 
 function jobPhaseForProgress(phase: DraftExportProgress["phase"]) {
@@ -77,9 +79,9 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
     project ? draftPresetForProject(project).id : "landscape-draft",
   );
   const [status, setStatus] = useState("Choose a format to preview and download.");
-  const [videoStatus, setVideoStatus] = useState("Checking draft video support.");
+  const [videoStatus, setVideoStatus] = useState("Checking video export support.");
   const [backends, setBackends] = useState<readonly DraftVideoBackend[]>([]);
-  const [backendId, setBackendId] = useState<DraftVideoBackend["id"]>("webcodecs-webm");
+  const [backendId, setBackendId] = useState<DraftVideoBackend["id"]>("webcodecs-mp4");
   const [videoResult, setVideoResult] = useState<DraftExportResult | null>(null);
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -125,6 +127,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
   useEffect(() => {
     let cancelled = false;
     void Promise.all([
+      probeMp4VideoBackend(selectedPreset),
       probeDraftVideoBackend(selectedPreset),
       Promise.resolve(probeMediaRecorderBackend()),
     ])
@@ -189,7 +192,7 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
     setExporting(true);
     setProgress(0);
     setVideoResult(null);
-    setVideoStatus("Preparing draft video export.");
+    setVideoStatus("Preparing video export.");
     try {
       const progressHandler = (update: DraftExportProgress) => {
         setProgress(update.progress);
@@ -203,8 +206,8 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         });
       };
       const result =
-        backend.id === "mediarecorder-webm"
-          ? await exportMediaRecorderWebm({
+        backend.id === "webcodecs-mp4"
+          ? await exportWebCodecsMp4({
               project,
               audio,
               backend,
@@ -212,24 +215,33 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
               signal: controller.signal,
               onProgress: progressHandler,
             })
-          : await exportDraftWebm({
-              project,
-              audio,
-              backend,
-              presetId,
-              signal: controller.signal,
-              onProgress: progressHandler,
-            });
+          : backend.id === "mediarecorder-webm"
+            ? await exportMediaRecorderWebm({
+                project,
+                audio,
+                backend,
+                presetId,
+                signal: controller.signal,
+                onProgress: progressHandler,
+              })
+            : await exportDraftWebm({
+                project,
+                audio,
+                backend,
+                presetId,
+                signal: controller.signal,
+                onProgress: progressHandler,
+              });
       setVideoResult(result);
       setCurrentJob({
         id: jobId,
         type: "encode",
         phase: "completed",
         progress: 1,
-        message: "Draft WebM ready.",
+        message: `${result.backend.container.toUpperCase()} ready.`,
       });
       setVideoStatus(
-        `Draft ready: ${formatBytes(result.blob.size)}, drift ${result.durationDriftMs} ms.`,
+        `Video ready: ${formatBytes(result.blob.size)}, drift ${result.durationDriftMs} ms.`,
       );
     } catch (error) {
       const message = exportErrorMessage(error);
@@ -259,8 +271,8 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         <p className="eyebrow">EXPORT</p>
         <h2 id="export-title">Timed-text export</h2>
         <p>
-          Subtitle export remains available without video APIs. Video export shows only qualified
-          local WebM choices and never lowers the selected quality silently.
+          Subtitle export remains available without video APIs. MP4 uses local WebCodecs H.264 when
+          available; WebM remains available as the fallback path.
         </p>
       </div>
 
@@ -280,6 +292,9 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
               <span>{option.label}</span>
               <small>
                 {option.supported ? `${option.mimeType} · ${option.detail}` : option.detail}
+                {!option.supported && option.id === "webcodecs-mp4"
+                  ? " Use WebM export on this browser."
+                  : ""}
               </small>
             </label>
           ))}
@@ -367,10 +382,12 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
               void startVideoExport();
             }}
           >
-            Export {selectedPreset.mode === "draft" ? "Draft " : ""}WebM
+            Export {selectedPreset.mode === "draft" ? "Draft " : ""}
+            {backend?.container === "mp4" ? "MP4" : "WebM"}
           </button>
           <button type="button" disabled={!videoResult || exporting} onClick={downloadVideo}>
-            Download {videoResult?.preset.mode === "draft" ? "Draft " : ""}WebM
+            Download {videoResult?.preset.mode === "draft" ? "Draft " : ""}
+            {videoResult?.backend.container === "mp4" ? "MP4" : "WebM"}
           </button>
         </div>
         {videoResult && (

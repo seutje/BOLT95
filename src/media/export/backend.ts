@@ -18,17 +18,18 @@ export const FULL_EXPORT_VIDEO_BITRATE = 8_000_000;
 export const FULL_EXPORT_AUDIO_BITRATE = 160_000;
 export const LONG_EXPORT_SYNC_TOLERANCE_MS = 500;
 
-export type DraftVideoCodec = "vp9" | "vp8";
+export type DraftVideoCodec = "vp9" | "vp8" | "avc";
 export type DraftAudioCodec = "opus";
 export type ExportMode = "draft" | "full";
-export type ExportBackendKind = "webcodecs-webm" | "mediarecorder-webm";
+export type ExportBackendKind = "webcodecs-mp4" | "webcodecs-webm" | "mediarecorder-webm";
 
 export interface DraftVideoBackend {
   readonly id: ExportBackendKind;
   readonly label: string;
-  readonly container: "webm";
+  readonly container: "mp4" | "webm";
   readonly videoCodec: DraftVideoCodec;
-  readonly audioCodec: DraftAudioCodec;
+  readonly audioCodec?: DraftAudioCodec;
+  readonly fullCodecString?: string;
   readonly mimeType: string;
   readonly supported: boolean;
   readonly detail: string;
@@ -199,7 +200,7 @@ export function estimateDraftExportRisk(
       : audio.durationMs;
   const frameCount = Math.ceil((durationMs / 1_000) * preset.frameRate);
   const estimatedPixels = preset.width * preset.height * frameCount;
-  if (!backend?.supported) reasons.push("No verified WebCodecs WebM backend is available.");
+  if (!backend?.supported) reasons.push("No verified browser video backend is available.");
   if (!backend?.supported) blockers.push("Select a supported video backend first.");
   if (preset.mode === "draft" && preset.durationMs >= DRAFT_EXPORT_MAX_DURATION_MS)
     reasons.push("Draft export is capped at 5 seconds.");
@@ -278,6 +279,63 @@ export async function probeDraftVideoBackend(
     detail: "WebCodecs encode probes passed for the selected draft preset.",
     deterministic: true,
   };
+}
+
+export async function probeMp4VideoBackend(
+  preset: DraftExportPreset = fullExportPresets[2]!,
+): Promise<DraftVideoBackend> {
+  const unavailableMp4 = (detail: string): DraftVideoBackend => ({
+    id: "webcodecs-mp4",
+    label: "MP4 (H.264)",
+    container: "mp4",
+    videoCodec: "avc",
+    mimeType: "video/mp4",
+    supported: false,
+    detail,
+    deterministic: true,
+  });
+
+  if (
+    typeof VideoEncoder === "undefined" ||
+    typeof VideoEncoder.isConfigSupported !== "function" ||
+    typeof HTMLCanvasElement === "undefined"
+  ) {
+    return unavailableMp4("WebCodecs H.264 and canvas are required for MP4 export.");
+  }
+
+  const candidates = ["avc1.42E028", "avc1.4D4028", "avc1.640028", "avc1.42E01E"] as const;
+  const baseConfig = {
+    width: preset.width,
+    height: preset.height,
+    bitrate: FULL_EXPORT_VIDEO_BITRATE,
+    framerate: preset.frameRate,
+    latencyMode: "quality" as const,
+    hardwareAcceleration: "no-preference" as const,
+    alpha: "discard" as const,
+  };
+
+  for (const codec of candidates) {
+    try {
+      const support = await VideoEncoder.isConfigSupported({ ...baseConfig, codec });
+      if (support.supported) {
+        return {
+          id: "webcodecs-mp4",
+          label: "MP4 (H.264)",
+          container: "mp4",
+          videoCodec: "avc",
+          fullCodecString: support.config?.codec ?? codec,
+          mimeType: `video/mp4;codecs=${support.config?.codec ?? codec}`,
+          supported: true,
+          detail: `WebCodecs H.264 probe passed with ${support.config?.codec ?? codec}.`,
+          deterministic: true,
+        };
+      }
+    } catch {
+      // Try the next AVC profile/level string.
+    }
+  }
+
+  return unavailableMp4("WebCodecs H.264 is unavailable for this export preset.");
 }
 
 export function probeMediaRecorderBackend(): DraftVideoBackend {

@@ -11,6 +11,7 @@ import {
   fullExportPresets,
   probeMediaRecorderBackend,
   probeDraftVideoBackend,
+  probeMp4VideoBackend,
   videoPresetForProject,
 } from "./backend";
 
@@ -104,7 +105,15 @@ const project: EditorProject = {
 
 describe("draft video backend", () => {
   beforeEach(() => {
-    vi.stubGlobal("VideoEncoder", class VideoEncoder {});
+    vi.stubGlobal(
+      "VideoEncoder",
+      class VideoEncoder {
+        static isConfigSupported = vi.fn(async (config: VideoEncoderConfig) => ({
+          supported: config.codec === "avc1.42E028",
+          config,
+        }));
+      },
+    );
     vi.stubGlobal("AudioEncoder", class AudioEncoder {});
     vi.stubGlobal("HTMLCanvasElement", class HTMLCanvasElement {});
     mockedCanEncodeAudio.mockResolvedValue(true);
@@ -129,6 +138,31 @@ describe("draft video backend", () => {
     const backend = await probeDraftVideoBackend(draftExportPresets[0]);
     expect(backend.supported).toBe(false);
     expect(backend.detail).toMatch(/WebCodecs/u);
+  });
+
+  it("selects MP4 H.264 when a WebCodecs AVC profile is supported", async () => {
+    const backend = await probeMp4VideoBackend(fullExportPresets[2]);
+    expect(backend.supported).toBe(true);
+    expect(backend.id).toBe("webcodecs-mp4");
+    expect(backend.container).toBe("mp4");
+    expect(backend.videoCodec).toBe("avc");
+    expect(backend.fullCodecString).toBe("avc1.42E028");
+    expect(backend.mimeType).toContain("video/mp4");
+  });
+
+  it("disables MP4 export when no H.264 profile is supported", async () => {
+    vi.stubGlobal(
+      "VideoEncoder",
+      class VideoEncoder {
+        static isConfigSupported = vi.fn(async (config: VideoEncoderConfig) => ({
+          supported: false,
+          config,
+        }));
+      },
+    );
+    const backend = await probeMp4VideoBackend(fullExportPresets[2]);
+    expect(backend.supported).toBe(false);
+    expect(backend.detail).toMatch(/H\.264/u);
   });
 
   it("caps draft duration to five seconds and keeps project preset draft-only", () => {
