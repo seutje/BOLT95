@@ -81,7 +81,10 @@ export function StyleWorkspace({ audio, project, onProjectChange }: StyleWorkspa
     };
   }, [audio]);
 
-  function replaceLoadedBackground(next: LoadedImage | null, fingerprint: string | null = null): void {
+  function replaceLoadedBackground(
+    next: LoadedImage | null,
+    fingerprint: string | null = null,
+  ): void {
     loadedBackgroundRef.current?.dispose();
     loadedBackgroundRef.current = next;
     loadedBackgroundFingerprintRef.current = next ? fingerprint : null;
