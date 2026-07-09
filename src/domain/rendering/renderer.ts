@@ -34,6 +34,17 @@ function paintBackground(
   context.fillRect(0, 0, preset.width, preset.height);
 }
 
+function measuredLineX(
+  theme: VisualTheme,
+  layout: FrameLayout,
+  measuredWidth: number,
+): number {
+  const { safeArea } = layout;
+  if (theme.textAlign === "left") return safeArea.x;
+  if (theme.textAlign === "right") return safeArea.x + safeArea.width - measuredWidth;
+  return safeArea.x + (safeArea.width - measuredWidth) / 2;
+}
+
 export function renderFrame(
   context: CanvasRenderingContext2D,
   input: RenderFrameInput,
@@ -59,7 +70,13 @@ export function renderFrame(
     context.font = `700 ${line.fontSize}px ${fontFamily(input.theme)}`;
     context.textAlign = "left";
     context.globalAlpha = current || input.reducedMotion ? 1 : 0.78;
-    for (const run of line.runs) {
+    const measuredRunWidths = line.runs.map((run) => context.measureText(run.text).width);
+    let x = measuredLineX(
+      input.theme,
+      layout,
+      measuredRunWidths.reduce((sum, width) => sum + width, 0),
+    );
+    for (const [index, run] of line.runs.entries()) {
       const color =
         run.active && input.theme.showWordHighlight
           ? input.theme.highlightColor
@@ -71,10 +88,11 @@ export function renderFrame(
         : 0;
       if (context.lineWidth > 0) {
         context.strokeStyle = input.theme.outlineColor;
-        context.strokeText(run.text, run.x, run.y);
+        context.strokeText(run.text, x, run.y);
       }
       context.fillStyle = color;
-      context.fillText(run.text, run.x, run.y);
+      context.fillText(run.text, x, run.y);
+      x += measuredRunWidths[index] ?? 0;
     }
   }
   context.restore();
