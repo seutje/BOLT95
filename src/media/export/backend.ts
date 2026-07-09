@@ -170,11 +170,8 @@ export function videoPresetForProject(
 }
 
 export function draftDurationMs(project: EditorProject, audio: AudioImportResult): number {
-  const lineEnd = project.lines.reduce((maximum, line) => Math.max(maximum, line.endMs), 0);
-  return Math.max(
-    1_000,
-    Math.min(DRAFT_EXPORT_MAX_DURATION_MS, audio.durationMs, lineEnd || audio.durationMs),
-  );
+  void project;
+  return Math.max(1_000, Math.min(DRAFT_EXPORT_MAX_DURATION_MS, audio.durationMs));
 }
 
 export function exportDurationMs(
@@ -183,8 +180,7 @@ export function exportDurationMs(
   preset: DraftExportPreset,
 ): number {
   if (preset.mode === "draft") return draftDurationMs(project, audio);
-  const lineEnd = project.lines.reduce((maximum, line) => Math.max(maximum, line.endMs), 0);
-  return Math.max(1_000, Math.min(audio.durationMs, lineEnd || audio.durationMs));
+  return Math.max(1_000, audio.durationMs);
 }
 
 export function estimateDraftExportRisk(

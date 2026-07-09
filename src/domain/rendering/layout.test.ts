@@ -54,4 +54,51 @@ describe("lyric frame layout", () => {
     expect(second).toEqual(first);
     expect(first.lines.some((line) => line.runs.some((run) => run.active))).toBe(true);
   });
+
+  it("keeps centered text anchored when the highlighted word changes", () => {
+    const frame = (active: string): FrameLyrics => ({
+      current: {
+        id: "current",
+        role: "current",
+        text: "Timing every word",
+        words: ["Timing", "every", "word"].map((text) => ({ text, active: text === active })),
+      },
+    });
+    const timing = layoutFrame(defaultVisualTheme, frame("Timing")).lines[0]!;
+    const every = layoutFrame(defaultVisualTheme, frame("every")).lines[0]!;
+    const word = layoutFrame(defaultVisualTheme, frame("word")).lines[0]!;
+
+    expect(every.x).toBeCloseTo(timing.x, 5);
+    expect(word.x).toBeCloseTo(timing.x, 5);
+    expect(every.width).toBeCloseTo(timing.width, 5);
+    expect(word.width).toBeCloseTo(timing.width, 5);
+  });
+
+  it("highlights only the active one-letter word slot", () => {
+    const frame = (activeIndex: number): FrameLyrics => ({
+      current: {
+        id: "current",
+        role: "current",
+        text: "A lantern with a paper skin, a glow",
+        words: ["A", "lantern", "with", "a", "paper", "skin", "a", "glow"].map((text, index) => ({
+          text,
+          active: index === activeIndex,
+        })),
+      },
+    });
+
+    const firstA = layoutFrame(defaultVisualTheme, frame(0)).lines[0]!.runs.filter(
+      (run) => run.active,
+    );
+    const secondA = layoutFrame(defaultVisualTheme, frame(3)).lines[0]!.runs.filter(
+      (run) => run.active,
+    );
+    const thirdA = layoutFrame(defaultVisualTheme, frame(6)).lines[0]!.runs.filter(
+      (run) => run.active,
+    );
+
+    expect(firstA.map((run) => run.text)).toEqual(["A"]);
+    expect(secondA.map((run) => run.text)).toEqual(["a"]);
+    expect(thirdA.map((run) => run.text)).toEqual(["a"]);
+  });
 });

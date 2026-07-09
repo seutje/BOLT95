@@ -7,9 +7,11 @@ import {
   draftExportPresets,
   draftPresetForProject,
   estimateDraftExportRisk,
+  exportDurationMs,
   fullExportPresets,
   probeMediaRecorderBackend,
   probeDraftVideoBackend,
+  videoPresetForProject,
 } from "./backend";
 
 vi.mock("mediabunny", () => ({
@@ -132,6 +134,16 @@ describe("draft video backend", () => {
   it("caps draft duration to five seconds and keeps project preset draft-only", () => {
     expect(draftDurationMs(project, audio())).toBe(5_000);
     expect(draftPresetForProject(project).id).toBe("landscape-draft");
+  });
+
+  it("uses audio duration instead of the final lyric timestamp for video export", () => {
+    const shortLyricsProject: EditorProject = {
+      ...project,
+      lines: project.lines.map((line) => ({ ...line, endMs: Math.min(line.endMs, 3_000) })),
+    };
+    const fullPreset = videoPresetForProject(shortLyricsProject, "landscape-full");
+    expect(exportDurationMs(shortLyricsProject, audio(8_000), fullPreset)).toBe(8_000);
+    expect(exportDurationMs(shortLyricsProject, audio(8_000), draftExportPresets[2]!)).toBe(5_000);
   });
 
   it("reports risk from support, duration, and memory facts", () => {

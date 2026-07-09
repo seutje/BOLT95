@@ -1,4 +1,4 @@
-import type { FrameLyrics } from "./timing";
+import type { FrameLyrics, FrameWord } from "./timing";
 import { getRenderPreset, type RenderPresetDefinition } from "./presets";
 import type { VisualTheme } from "./schema";
 
@@ -32,6 +32,8 @@ interface Segment {
   readonly active: boolean;
 }
 
+const wordPattern = /[\p{L}\p{N}]+(?:['’`´-][\p{L}\p{N}]+)*/gu;
+
 function fontSizeFor(preset: RenderPresetDefinition, theme: VisualTheme): number {
   const base = Math.min(preset.width, preset.height) * 0.084;
   return Math.round(base * theme.fontScale);
@@ -48,7 +50,7 @@ function segmentWidth(segment: Segment, fontSize: number): number {
           ? 0.88
           : 0.62;
   }
-  return Math.ceil(units * fontSize);
+  return units * fontSize;
 }
 
 function splitLongText(text: string, fontSize: number, maxWidth: number): readonly string[] {
@@ -61,47 +63,62 @@ function splitLongText(text: string, fontSize: number, maxWidth: number): readon
   return chunks;
 }
 
-function lineSegments(text: string, activeWords: readonly string[]): readonly Segment[] {
-  if (activeWords.length === 0) return [{ text, active: false }];
-  const escaped = activeWords.map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"));
-  const pattern = new RegExp(`(${escaped.join("|")})`, "giu");
+function lineSegments(
+  text: string,
+  words: readonly FrameWord[],
+  startWordIndex: number,
+): { readonly segments: readonly Segment[]; readonly nextWordIndex: number } {
+  if (words.length === 0) {
+    return { segments: [{ text, active: false }], nextWordIndex: startWordIndex };
+  }
   const segments: Segment[] = [];
   let last = 0;
-  for (const match of text.matchAll(pattern)) {
+  let wordIndex = startWordIndex;
+  for (const match of text.matchAll(wordPattern)) {
     const index = match.index ?? 0;
     if (index > last) segments.push({ text: text.slice(last, index), active: false });
-    segments.push({ text: match[0], active: true });
+    segments.push({ text: match[0], active: words[wordIndex]?.active === true });
     last = index + match[0].length;
+    wordIndex += 1;
   }
   if (last < text.length) segments.push({ text: text.slice(last), active: false });
-  return segments.length > 0 ? segments : [{ text, active: false }];
+  return {
+    segments: segments.length > 0 ? segments : [{ text, active: false }],
+    nextWordIndex: wordIndex,
+  };
 }
 
 function wrapSegments(
   text: string,
-  activeWords: readonly string[],
+  words: readonly FrameWord[],
   fontSize: number,
   maxWidth: number,
 ): readonly (readonly Segment[])[] {
-  const words = text.split(/(\s+)/u).filter((part) => part.length > 0);
+  const parts = text.split(/(\s+)/u).filter((part) => part.length > 0);
   const rows: Segment[][] = [];
+  let wordIndex = 0;
+  const pushRow = (rowText: string): void => {
+    const result = lineSegments(rowText, words, wordIndex);
+    rows.push([...result.segments]);
+    wordIndex = result.nextWordIndex;
+  };
   let current = "";
-  for (const word of words) {
-    const candidate = `${current}${word}`;
+  for (const part of parts) {
+    const candidate = `${current}${part}`;
     if (current && segmentWidth({ text: candidate, active: false }, fontSize) > maxWidth) {
-      rows.push([...lineSegments(current.trimEnd(), activeWords)]);
-      current = word.trimStart();
+      pushRow(current.trimEnd());
+      current = part.trimStart();
     } else {
       current = candidate;
     }
     if (segmentWidth({ text: current, active: false }, fontSize) > maxWidth) {
       for (const chunk of splitLongText(current, fontSize, maxWidth)) {
-        rows.push([...lineSegments(chunk, activeWords)]);
+        pushRow(chunk);
       }
       current = "";
     }
   }
-  if (current.trim()) rows.push([...lineSegments(current.trim(), activeWords)]);
+  if (current.trim()) pushRow(current.trim());
   return rows.length > 0 ? rows : [[{ text, active: false }]];
 }
 
@@ -127,8 +144,7 @@ export function layoutFrame(theme: VisualTheme, lyrics: FrameLyrics): FrameLayou
   ];
   const laidOut: TextLineLayout[] = [];
   for (const entry of entries) {
-    const activeWords = entry.frame.words.filter((word) => word.active).map((word) => word.text);
-    const wrapped = wrapSegments(entry.frame.text, activeWords, entry.fontSize, safe.width);
+    const wrapped = wrapSegments(entry.frame.text, entry.frame.words, entry.fontSize, safe.width);
     for (const row of wrapped) {
       const width = row.reduce((sum, segment) => sum + segmentWidth(segment, entry.fontSize), 0);
       laidOut.push({
