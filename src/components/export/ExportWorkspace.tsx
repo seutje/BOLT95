@@ -125,18 +125,18 @@ export function ExportWorkspace({ audio, project }: ExportWorkspaceProps) {
         : [],
     [audio, backend],
   );
-  const displayedPresets = useMemo(
-    () => {
-      const presets = [
-        ...videoExportPresets.filter((preset) => preset.mode === "draft"),
-        ...qualifiedFullPresets,
-      ];
-      if (selectedPreset.mode === "full" && !presets.some((preset) => preset.id === selectedPreset.id))
-        presets.push(selectedPreset);
-      return presets;
-    },
-    [qualifiedFullPresets, selectedPreset],
-  );
+  const displayedPresets = useMemo(() => {
+    const presets = [
+      ...videoExportPresets.filter((preset) => preset.mode === "draft"),
+      ...qualifiedFullPresets,
+    ];
+    if (
+      selectedPreset.mode === "full" &&
+      !presets.some((preset) => preset.id === selectedPreset.id)
+    )
+      presets.push(selectedPreset);
+    return presets;
+  }, [qualifiedFullPresets, selectedPreset]);
   const projectId = project?.id;
   const backgroundMetadata = project?.visual?.backgroundImage;
 
